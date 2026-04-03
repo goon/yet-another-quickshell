@@ -1,8 +1,6 @@
 # goon/yet-another-quickshell
 
-Blazingly mid desktop shell built with [Quickshell](https://quickshell.org/) for personal use within my [Nix OS](https://github.com/goon/nixos) configuration.
-
-It's **feature limited** by design, **proudly unoptimised** and a questionable attempt replicating what others have done far better.
+Blazingly mid desktop shell built with [Quickshell](https://quickshell.org/) for personal use within my [Nix OS](https://github.com/goon/nixos) configuration delivering a mediocre at best desktop experience. It's **feature limited** by design, **proudly unoptimised** and a questionable attempt replicating what others have done far better.
 
 > [!IMPORTANT]
 > 
