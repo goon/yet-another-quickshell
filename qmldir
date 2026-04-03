@@ -32,13 +32,13 @@ singleton Clipboard services/Clipboard.qml
 singleton Bluetooth services/Bluetooth.qml
 singleton Display services/Display.qml
 singleton Battery services/Battery.qml
-
+singleton Notifications services/Notifications.qml
 singleton Gowall services/Gowall.qml
 
 
 # Services (Types)
 Commander services/Commander.qml
-NotificationManager modules/notifications/NotificationManager.qml
+NotificationOverlay modules/notifications/NotificationOverlay.qml
 
 # Components (Root)
 AppList modules/panels/launcher/AppList.qml
@@ -48,7 +48,7 @@ WallpaperCarousel modules/panels/launcher/wallpaper/WallpaperCarousel.qml
 ThemeSwitcher modules/panels/launcher/ThemeSwitcher.qml
 
 NotificationCard modules/notifications/NotificationCard.qml
-Toast modules/notifications/Toast.qml
+NotificationToast modules/notifications/NotificationToast.qml
 
 VolumeToast modules/notifications/VolumeToast.qml
 

@@ -17,7 +17,7 @@ ShellRoot {
         PopoutService.settings = settings;
         PopoutService.mediaPopout = mediaPopout;
         PopoutService.notificationPopout = notificationPopout;
-        PopoutService.notificationManager = notificationService;
+        PopoutService.notificationManager = Notifications;
         PopoutService.systemPopout = systemPopout;
         PopoutService.audioPopout = audioPopout;
         PopoutService.calendarPopout = calendarPopout;
@@ -28,14 +28,8 @@ ShellRoot {
         id: commander
     }
 
-    NotificationServer {
-        id: notificationServer
-    }
-
-    NotificationManager {
-        id: notificationService
-
-        notificationServer: notificationServer
+    NotificationOverlay {
+        id: notificationOverlay
     }
 
     // Windows / Overlays
@@ -57,7 +51,7 @@ ShellRoot {
 
     NotificationPopout {
         id: notificationPopout
-        notificationManager: notificationService
+        notificationManager: Notifications
     }
 
     SystemPopout {

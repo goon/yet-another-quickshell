@@ -1,20 +1,14 @@
 import QtQuick
 import Quickshell
-import Quickshell.Services.Notifications
 import qs
 
 Item {
     id: root
 
-    property var notificationServer: null
-    property alias notificationHistory: historyModel
-    readonly property alias unreadCount: historyModel.count
     property var activePopups: []
-    property var trackedNotifications: ({
-    })
-    property var popupHandlers: ({
-    })
-    property Component toastComponent: Qt.createComponent("Toast.qml")
+    property var trackedNotifications: ({})
+    property var popupHandlers: ({})
+    property Component toastComponent: Qt.createComponent("NotificationToast.qml")
 
     function createPopup(notification) {
         if (toastComponent.status === Component.Ready) {
@@ -26,18 +20,17 @@ Item {
                 activePopups.push(popup);
                 root.trackedNotifications[notification.trackingId] = true;
                 updateStackIndices();
+                
                 var handlerId = notification.trackingId;
                 popupHandlers[handlerId] = {
                     "popup": popup,
-                    "heightChanged": () => {
-                        return updateStackIndices();
-                    },
+                    "heightChanged": () => { return updateStackIndices(); },
                     "notificationChanged": () => {
                         if (popup.notification === null)
                             removePopup(popup);
-
                     }
                 };
+                
                 popup.implicitHeightChanged.connect(popupHandlers[handlerId].heightChanged);
                 popup.notificationChanged.connect(popupHandlers[handlerId].notificationChanged);
             }
@@ -72,35 +65,11 @@ Item {
         }
     }
 
-    ListModel {
-        id: historyModel
-    }
-
+    // Listen to the singleton service
     Connections {
-        function onNotification(notification) {
-            notification.tracked = true;
-            historyModel.insert(0, {
-                "modelData": notification,
-                "receivedAt": new Date()
-            });
-            notification.onClosed.connect(() => {
-                for (var i = 0; i < historyModel.count; i++) {
-                    if (historyModel.get(i).modelData === notification) {
-                        historyModel.remove(i);
-                        break;
-                    }
-                }
-            });
-            if (Preferences.notificationMode === 0) {
-                if (Config.notificationSoundEnabled)
-                    ProcessService.runDetached(["mpv", "--no-video", "--volume=" + Config.notificationSoundVolume.toString(), Config.notificationSoundPath]);
-
-                createPopup(notification);
-            }
+        target: Notifications
+        function onNotificationReceived(notification) {
+            createPopup(notification);
         }
-
-        target: notificationServer
-        enabled: notificationServer !== null
     }
-
 }
