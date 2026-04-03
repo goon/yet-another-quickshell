@@ -14,6 +14,7 @@ It's **feature limited** by design, **proudly unoptimised** and a questionable a
 ## Dependencies 
 
 I am almost certainly forgetting one or two, or five.
+
 You can try the `install.sh` script on Arch and it's derivitives but I haven't tested it, your computer might blow up.
 
 ```
