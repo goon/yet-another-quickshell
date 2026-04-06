@@ -30,6 +30,7 @@ Rectangle {
     // Interactivity
     property bool clickable: false
     property bool hoverEnabled: true
+    property bool premiumHover: false
     readonly property alias containsMouse: mouseArea.containsMouse
     readonly property alias pressed: mouseArea.pressed
     // Internal layout control
@@ -62,19 +63,57 @@ Rectangle {
 
         anchors.fill: parent
         radius: parent.radius
-        color: {
-            if (!root.hoverEnabled)
-                return Theme.colors.transparent;
+        color: "transparent"
 
-            if (root.hoverColor !== Theme.colors.transparent && mouseArea.containsMouse)
-                return root.hoverColor;
+        // Premium Selection Gradient Border
+        Item {
+            anchors.fill: parent
+            visible: root.premiumHover && mouseArea.containsMouse
+            
+            // The Gradient "Border"
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.parent.radius
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0; color: Theme.colors.primary }
+                    GradientStop { position: 1; color: Theme.colors.secondary }
+                }
+            }
 
-            if (mouseArea.containsMouse)
-                return Theme.colors.background;
-
-            return Theme.colors.transparent;
+            // Inner "Cutout" to create the border effect
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 1.5
+                radius: parent.parent.radius - 1.5
+                color: Theme.colors.surface
+                
+                // Add the selection tint overlay inside the cutout
+                Rectangle {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    color: Qt.alpha(Theme.colors.primary, 0.08)
+                }
+            }
         }
 
+        // Standard Hover Layer (fallback)
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: {
+                if (!root.hoverEnabled || root.premiumHover)
+                    return Theme.colors.transparent;
+
+                if (root.hoverColor !== Theme.colors.transparent && mouseArea.containsMouse)
+                    return root.hoverColor;
+
+                if (mouseArea.containsMouse)
+                    return Theme.colors.background;
+
+                return Theme.colors.transparent;
+            }
+        }
     }
 
     MouseArea {
