@@ -158,11 +158,23 @@ SettingsPage {
 
             BaseButton {
                 id: browseBtn
-                icon: browserVisible ? "expand_less" : "folder"
-                property bool browserVisible: false
+                icon: "folder"
                 Layout.preferredHeight: dirInput.height
                 Layout.preferredWidth: dirInput.height
-                onClicked: browserVisible = !browserVisible
+                onClicked: PopoutService.openFileDialog(Preferences.wallpaperDirectory, (path) => {
+                    if (path) {
+                        var p = path.toString();
+                        if (p.indexOf("file://") === 0) p = p.substring(7);
+                        
+                        // Always update preferences
+                        Preferences.wallpaperDirectory = p;
+                        
+                        // Only update UI if it's still alive
+                        if (typeof dirInput !== 'undefined' && dirInput !== null) {
+                            dirInput.text = p;
+                        }
+                    }
+                })
             }
         }
 
@@ -170,7 +182,6 @@ SettingsPage {
         BaseBlock {
             visible: Preferences.wallpaperDirectory === ""
             backgroundColor: Theme.alpha(Theme.colors.warning, 0.1)
-            borderEnabled: true
             borderColor: Theme.colors.warning
             Layout.fillWidth: true
             Layout.columnSpan: 2
@@ -201,20 +212,6 @@ SettingsPage {
                         Layout.fillWidth: true
                     }
                 }
-            }
-        }
-
-        // Inline folder browser, shown/hidden on toggle
-        BaseFolderDialog {
-            id: folderBrowser
-            Layout.fillWidth: true
-            Layout.columnSpan: 2
-            visible: browseBtn.browserVisible
-            currentFolder: Preferences.wallpaperDirectory
-            onFolderSelected: (path) => {
-                Preferences.wallpaperDirectory = path;
-                dirInput.text = path;
-                browseBtn.browserVisible = false;
             }
         }
     }
