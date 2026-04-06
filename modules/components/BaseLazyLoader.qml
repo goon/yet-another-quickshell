@@ -13,6 +13,8 @@ Item {
     property alias item: loader.item
     property alias status: loader.status
     property alias active: loader.active
+    
+    signal loaded()
 
     function toggle() {
         if (!loader.active)
@@ -41,6 +43,7 @@ Item {
 
         active: false
         anchors.fill: parent
+        onLoaded: root.loaded()
     }
 
 }
