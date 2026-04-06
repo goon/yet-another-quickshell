@@ -13,13 +13,14 @@ import qs
 PanelWindow {
     id: root
 
+    // --- Configuration ---
+    property string namespace: "quickshell:wallpaper"
+    property int exclusiveZone: -1
+
     // --- State ---
     property string activePath: ""
     property bool bufferToggle: false // false: A is active, true: B is active
     property bool transitionPending: false
-
-    property real mouseX: 0.5
-    property real mouseY: 0.5
 
     // --- Logic ---
 
@@ -88,9 +89,9 @@ PanelWindow {
 
     // --- Layout Shell Config ---
     WlrLayershell.layer: WlrLayer.Background
-    WlrLayershell.namespace: "wallpaper"
+    WlrLayershell.namespace: root.namespace
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-    WlrLayershell.exclusiveZone: 0
+    WlrLayershell.exclusiveZone: root.exclusiveZone
     visible: true
     color: Theme.colors.background
 
@@ -110,52 +111,26 @@ PanelWindow {
 
     Image {
         id: loaderA
-        anchors.centerIn: parent
-        width: parent.width + (Preferences.wallpaperParallaxEnabled ? Preferences.wallpaperParallaxStrength * 2 : 0)
-        height: parent.height + (Preferences.wallpaperParallaxEnabled ? Preferences.wallpaperParallaxStrength * 2 : 0)
+        anchors.fill: parent
         visible: false
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
-        cache: false
+        cache: true
         
         // Trigger transition when load completes
         onStatusChanged: if (status === Image.Ready) root.checkAndTransition()
-
-        transform: Translate {
-            x: Preferences.wallpaperParallaxEnabled ? (root.mouseX - 0.5) * -Preferences.wallpaperParallaxStrength : 0
-            y: Preferences.wallpaperParallaxEnabled ? (root.mouseY - 0.5) * -Preferences.wallpaperParallaxStrength : 0
-
-            Behavior on x { BaseAnimation { duration: Theme.animations.slow } }
-            Behavior on y { BaseAnimation { duration: Theme.animations.slow } }
-        }
-
-        Behavior on width { BaseAnimation { duration: Theme.animations.slow } }
-        Behavior on height { BaseAnimation { duration: Theme.animations.slow } }
     }
 
     Image {
         id: loaderB
-        anchors.centerIn: parent
-        width: parent.width + (Preferences.wallpaperParallaxEnabled ? Preferences.wallpaperParallaxStrength * 2 : 0)
-        height: parent.height + (Preferences.wallpaperParallaxEnabled ? Preferences.wallpaperParallaxStrength * 2 : 0)
+        anchors.fill: parent
         visible: false
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
-        cache: false
+        cache: true
         
         // Trigger transition when load completes
         onStatusChanged: if (status === Image.Ready) root.checkAndTransition()
-
-        transform: Translate {
-            x: Preferences.wallpaperParallaxEnabled ? (root.mouseX - 0.5) * -Preferences.wallpaperParallaxStrength : 0
-            y: Preferences.wallpaperParallaxEnabled ? (root.mouseY - 0.5) * -Preferences.wallpaperParallaxStrength : 0
-
-            Behavior on x { BaseAnimation { duration: Theme.animations.slow } }
-            Behavior on y { BaseAnimation { duration: Theme.animations.slow } }
-        }
-
-        Behavior on width { BaseAnimation { duration: Theme.animations.slow } }
-        Behavior on height { BaseAnimation { duration: Theme.animations.slow } }
     }
 
     // --- Internal Transition Logic ---
@@ -241,21 +216,4 @@ PanelWindow {
         }
     }
 
-    MouseArea {
-        id: mouseTracker
-        anchors.fill: parent
-        hoverEnabled: true
-        propagateComposedEvents: true
-        acceptedButtons: Qt.LeftButton
-        enabled: Preferences.wallpaperParallaxEnabled
-        z: 999
-        onPositionChanged: (mouse) => {
-            root.mouseX = mouse.x / width;
-            root.mouseY = mouse.y / height;
-        }
-        onExited: {
-            root.mouseX = 0.5;
-            root.mouseY = 0.5;
-        }
-    }
 }
