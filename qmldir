@@ -61,6 +61,7 @@ BaseMultiButton modules/components/BaseMultiButton.qml
 BaseIcon modules/components/BaseIcon.qml
 BaseInput modules/components/BaseInput.qml
 BasePopoutWindow modules/components/BasePopoutWindow.qml
+BaseFloatingWindow modules/components/BaseFloatingWindow.qml
 BaseScrollBar modules/components/BaseScrollBar.qml
 BaseScroller modules/components/BaseScroller.qml
 BaseSeparator modules/components/BaseSeparator.qml
@@ -71,7 +72,6 @@ BaseSwitch modules/components/BaseSwitch.qml
 BaseLazyLoader modules/components/BaseLazyLoader.qml
 BaseAnimation modules/components/BaseAnimation.qml
 BaseSpinBox modules/components/BaseSpinBox.qml
-BaseFolderDialog modules/components/BaseFolderDialog.qml
 BaseTooltip modules/components/BaseTooltip.qml
 
 
@@ -113,3 +113,8 @@ TrayPopout modules/panels/TrayPopout.qml
 NetworkContent modules/panels/system/NetworkContent.qml
 BluetoothContent modules/panels/system/BluetoothContent.qml
 SystemControlPopout modules/panels/system/SystemControlPopout.qml
+
+FileDialogWindow modules/filedialog/FileDialogWindow.qml
+FileDialogSidebar modules/filedialog/FileDialogSidebar.qml
+FileDialogNav modules/filedialog/FileDialogNav.qml
+FileDialogContent modules/filedialog/FileDialogContent.qml
