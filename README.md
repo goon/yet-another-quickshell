@@ -23,6 +23,7 @@ qt6-svg
 qt6-wayland
 qt6-connnectivity
 qt6-shadertools
+cliphist
 wl-clipboard
 mesa-utils
 xdg-utils
