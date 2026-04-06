@@ -42,18 +42,6 @@ QtObject {
     property var activePanelLoader: null
     property int barWidth: 0
 
-    // --- Robust One-Shot Listener ---
-    function _runWhenReady(loader, action) {
-        if (!loader) return;
-        if (loader.status === Loader.Ready) {
-            action();
-        } else {
-            var comp = Qt.createComponent(Qt.resolvedUrl("BaseLazyListener.qml"));
-            if (comp.status === Component.Ready) {
-                comp.createObject(root, { "loader": loader, "callback": action });
-            }
-        }
-    }
 
     // --- COORDINATE MATH ---
     function _getCoordinatesFromItem(item) {
@@ -80,7 +68,7 @@ QtObject {
             launcherLoader.toggle();
             activePanelLoader = launcherLoader;
         }
-        _runWhenReady(launcherLoader, () => { launcherLoader.item.switchToTab(2); });
+        launcherLoader.runWhenReady(() => { launcherLoader.item.switchToTab(2); });
     }
 
     function toggleSettings() { _toggle(settingsLoader); }
@@ -147,7 +135,7 @@ QtObject {
         _applyAnchors(systemControlPopoutLoader, screenX, barLeft, barRight);
         
         if (systemControlPopoutLoader) {
-            _runWhenReady(systemControlPopoutLoader, () => {
+            systemControlPopoutLoader.runWhenReady(() => {
                 if (systemControlPopoutLoader.item.panelState !== "Open") {
                     if (initialTab !== undefined) systemControlPopoutLoader.item.switchToTab(initialTab);
                 }
@@ -159,12 +147,13 @@ QtObject {
     function openFileDialog(initialPath, callback) {
         if (fileDialogLoader) {
             fileDialogLoader.active = true;
-            _runWhenReady(fileDialogLoader, () => { fileDialogLoader.item.open(initialPath, callback); });
+            fileDialogLoader.runWhenReady(() => { fileDialogLoader.item.open(initialPath, callback); });
         }
     }
 
     function _applyAnchors(loader, screenX, barLeft, barRight) {
-        _runWhenReady(loader, () => {
+        if (!loader) return;
+        loader.runWhenReady(() => {
             var item = loader.item;
             item.anchorX = (screenX !== undefined) ? screenX : -1;
             item.anchorMinX = (barLeft !== undefined) ? barLeft : -1;
