@@ -71,6 +71,17 @@ QtObject {
         launcherLoader.runWhenReady(() => { launcherLoader.item.switchToTab(2); });
     }
 
+    function toggleClipboard() {
+        if (!launcherLoader) return;
+        if (activePanelLoader && activePanelLoader !== launcherLoader) activePanelLoader.close();
+        
+        if (!launcherLoader.active || (launcherLoader.item && launcherLoader.item.panelState !== "Open")) {
+            launcherLoader.toggle();
+            activePanelLoader = launcherLoader;
+        }
+        launcherLoader.runWhenReady(() => { launcherLoader.item.switchToTab(1); });
+    }
+
     function toggleSettings() { _toggle(settingsLoader); }
 
     function toggleMediaPopout(screenX, barLeft, barRight) {
