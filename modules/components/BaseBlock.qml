@@ -61,7 +61,20 @@ Rectangle {
 
     onContainsMouseChanged: {
         if (containsMouse && Preferences.popoutTrigger === 1 && popoutOnHover && onHoverAction) {
-            onHoverAction();
+            hoverTimer.restart();
+        } else {
+            hoverTimer.stop();
+        }
+    }
+
+    Timer {
+        id: hoverTimer
+        interval: 250
+        repeat: false
+        onTriggered: {
+            if (root.onHoverAction)
+                root.onHoverAction();
+
         }
     }
 
