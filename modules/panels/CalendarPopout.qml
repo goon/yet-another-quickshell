@@ -47,7 +47,6 @@ BasePopoutWindow {
                             height: parent.height
                             icon: "chevron_left"
                             iconSize: Theme.dimensions.iconBase
-                            normalColor: Theme.colors.transparent
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
                             onClicked: {
@@ -124,7 +123,6 @@ BasePopoutWindow {
                             height: parent.height
                             icon: "chevron_right"
                             iconSize: Theme.dimensions.iconBase
-                            normalColor: Theme.colors.transparent
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
                             onClicked: {
@@ -232,7 +230,6 @@ BasePopoutWindow {
                                     implicitHeight: dayText.implicitHeight + Theme.geometry.spacing.medium
                                     height: implicitHeight
                                     
-                                    normalColor: Theme.colors.transparent
                                     hoverColor: modelData.isCurrentMonth ? Theme.alpha(Theme.colors.text, 0.05) : Theme.colors.transparent
                                     activeColor: Theme.alpha(Theme.colors.text, 0.1)
                                     

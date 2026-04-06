@@ -79,7 +79,6 @@ BasePopoutWindow {
                         icon: Preferences.notificationMode === 1 ? "notifications_off" : "notifications"
                         iconColor: (Preferences.notificationMode === 1 && !containsMouse) ? Theme.colors.error : (containsMouse ? Theme.colors.primary : Theme.colors.text)
                         size: Theme.dimensions.iconMedium
-                        normalColor: Theme.colors.transparent
                         hoverColor: Theme.alpha(Theme.colors.error, 0.1)
                         onClicked: Preferences.notificationMode = (Preferences.notificationMode + 1) % 2
                     }
@@ -87,7 +86,6 @@ BasePopoutWindow {
                     BaseButton {
                         icon: "delete_sweep"
                         size: Theme.dimensions.iconMedium
-                        normalColor: Theme.colors.transparent
                         hoverColor: Theme.alpha(Theme.colors.error, 0.1)
                         onClicked: {
                             if (mainContent.notificationManager) {

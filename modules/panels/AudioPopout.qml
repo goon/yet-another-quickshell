@@ -121,7 +121,6 @@ BasePopoutWindow {
                                 Layout.preferredHeight: 50
                                 gradient: true
                                 selected: (Volume.audioSink && Volume.audioSink.id === modelData.id) || containsMouse
-                                normalColor: Theme.colors.transparent
                                 hoverColor: Theme.colors.transparent
                                 contentAlignment: Qt.AlignLeft
                                 paddingHorizontal: Theme.geometry.spacing.dynamicPadding
@@ -199,7 +198,6 @@ BasePopoutWindow {
                                 Layout.preferredHeight: 50
                                 gradient: true
                                 selected: (Volume.audioSource && Volume.audioSource.id === modelData.id) || containsMouse
-                                normalColor: Theme.colors.transparent
                                 hoverColor: Theme.colors.transparent
                                 contentAlignment: Qt.AlignLeft
                                 paddingHorizontal: Theme.geometry.spacing.dynamicPadding
@@ -289,7 +287,6 @@ BasePopoutWindow {
                             Layout.preferredWidth: Theme.dimensions.iconLarge
                             Layout.preferredHeight: Theme.dimensions.iconLarge
                             Layout.alignment: Qt.AlignVCenter
-                            normalColor: Theme.colors.transparent
                             hoverColor: Theme.colors.background
                             activeColor: Theme.colors.background
                             icon: (modelData.audio && modelData.audio.muted) ? "volume_off" : "volume_up"

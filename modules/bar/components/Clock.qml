@@ -8,7 +8,6 @@ BaseBlock {
     
     Layout.alignment: Qt.AlignVCenter
     Layout.fillWidth: false
-    paddingHorizontal: Theme.geometry.spacing.dynamicPadding
     paddingVertical: 0
     implicitHeight: Theme.dimensions.barItemHeight
     hoverEnabled: false

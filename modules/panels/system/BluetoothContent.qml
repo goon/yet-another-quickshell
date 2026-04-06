@@ -69,7 +69,6 @@ ColumnLayout {
         id: powerBlock
         Layout.fillWidth: true
         padding: 4
-        blockRadius: Theme.geometry.radius
 
         BaseMultiButton {
             model: [
@@ -105,7 +104,6 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 64
-                normalColor: Theme.colors.transparent
                 hoverEnabled: false
                 text: ""
                 icon: ""
@@ -381,8 +379,8 @@ ColumnLayout {
                             textSize: 10
                             textWeight: Theme.typography.weights.bold
                             textColor: Theme.colors.text
-                            paddingHorizontal: 16
-                            paddingVertical: 8
+                            paddingHorizontal: Theme.geometry.spacing.dynamicPadding
+                            paddingVertical: Theme.geometry.spacing.medium
                             normalColor: modelData.connected ? Theme.alpha(Theme.colors.error, 0.6) : Theme.colors.transparent
                             hoverColor: modelData.connected ? Theme.alpha(Theme.colors.error, 0.8) : Theme.alpha(Theme.colors.text, 0.1)
                             onClicked: function(mouse) {
@@ -412,8 +410,8 @@ ColumnLayout {
                             textSize: 10
                             textWeight: Theme.typography.weights.bold
                             textColor: Theme.colors.text
-                            paddingHorizontal: 16
-                            paddingVertical: 8
+                            paddingHorizontal: Theme.geometry.spacing.dynamicPadding
+                            paddingVertical: Theme.geometry.spacing.medium
                             normalColor: Theme.alpha(Theme.colors.error, 0.6)
                             hoverColor: Theme.alpha(Theme.colors.error, 0.8)
                             onClicked: Bluetooth.removeDevice(modelData.address)

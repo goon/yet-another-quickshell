@@ -19,7 +19,6 @@ Item {
         id: background
 
         anchors.fill: parent
-        paddingHorizontal: Theme.geometry.spacing.dynamicPadding
         paddingVertical: 0
         implicitHeight: Theme.dimensions.barItemHeight
         clickable: true

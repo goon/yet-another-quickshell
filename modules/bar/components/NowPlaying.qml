@@ -21,7 +21,6 @@ Item {
         id: background
 
         anchors.fill: parent
-        paddingHorizontal: Theme.geometry.spacing.dynamicPadding
         paddingVertical: 0
         implicitHeight: Theme.dimensions.barItemHeight
         hoverEnabled: false
@@ -32,8 +31,6 @@ Item {
             PopoutService.toggleMediaPopout();
         }
 
-        // Match standard capsule look
-        blockRadius: Theme.geometry.radius
         implicitWidth: mediaWidget.implicitWidth + (paddingHorizontal * 2)
 
         // Now Playing Media Widget

@@ -34,7 +34,6 @@ BasePopoutWindow {
 
                 Layout.fillWidth: true
                 padding: 4
-                blockRadius: Theme.geometry.radius
 
                 BaseMultiButton {
                     id: multiButton
@@ -109,7 +108,6 @@ BasePopoutWindow {
                         id: quickActionsRow
                         Layout.fillWidth: true
                         padding: 6
-                        blockRadius: Theme.geometry.radius
 
                         RowLayout {
                             Layout.fillWidth: true
@@ -185,7 +183,6 @@ BasePopoutWindow {
                                 Layout.fillWidth: true
                                 icon: "power_settings_new"
                                 iconSize: Theme.dimensions.iconLarge
-                                normalColor: "transparent"
                                 hoverEnabled: false
                                 hoverRotate: true
                                 onClicked: {
@@ -198,7 +195,6 @@ BasePopoutWindow {
                                 Layout.fillWidth: true
                                 icon: "restart_alt"
                                 iconSize: Theme.dimensions.iconLarge
-                                normalColor: "transparent"
                                 hoverEnabled: false
                                 hoverRotate: true
                                 onClicked: {
@@ -211,7 +207,6 @@ BasePopoutWindow {
                                 Layout.fillWidth: true
                                 icon: "bedtime"
                                 iconSize: Theme.dimensions.iconLarge
-                                normalColor: "transparent"
                                 hoverEnabled: false
                                 hoverRotate: true
                                 onClicked: {
@@ -224,7 +219,6 @@ BasePopoutWindow {
                                 Layout.fillWidth: true
                                 icon: "logout"
                                 iconSize: Theme.dimensions.iconLarge
-                                normalColor: "transparent"
                                 hoverEnabled: false
                                 hoverRotate: true
                                 onClicked: {
@@ -237,7 +231,6 @@ BasePopoutWindow {
                                 Layout.fillWidth: true
                                 icon: "settings_suggest"
                                 iconSize: Theme.dimensions.iconLarge
-                                normalColor: "transparent"
                                 hoverEnabled: false
                                 hoverRotate: true
                                 onClicked: {

@@ -25,7 +25,6 @@ BaseBlock {
         timeString = Qt.formatDateTime(time, "hh:mm");
     }
 
-    borderEnabled: true
     borderWidth: 1
     borderColor: Theme.colors.border
     padding: 0
@@ -224,7 +223,6 @@ BaseBlock {
                     visible: root.showCloseButton
                     icon: "close"
                     iconColor: containsMouse ? Theme.colors.surface : Theme.colors.error
-                    normalColor: Theme.colors.transparent
                     hoverColor: Theme.colors.error
                     size: Theme.typography.size.large
                     onClicked: root.closeClicked()

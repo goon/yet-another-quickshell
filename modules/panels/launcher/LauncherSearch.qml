@@ -26,7 +26,6 @@ BaseBlock {
     Layout.preferredHeight: Theme.dimensions.launcherSearchHeight
     paddingHorizontal: 20
     paddingVertical: 0
-    blockRadius: Theme.geometry.radius
     borderEnabled: false
 
     RowLayout {

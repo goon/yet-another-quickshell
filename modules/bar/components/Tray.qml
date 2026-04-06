@@ -13,10 +13,7 @@ BaseBlock {
     visible: TrayService.itemCount > 0
     implicitWidth: layout.implicitWidth + (paddingHorizontal * 2)
     implicitHeight: Theme.dimensions.barItemHeight
-    paddingHorizontal: Theme.geometry.spacing.dynamicPadding
     paddingVertical: 0
-    blockRadius: Theme.geometry.radius
-    clickable: false // Tray background isn't clickable, only items are
     hoverEnabled: false
 
     Component {

@@ -47,7 +47,6 @@ BasePopoutWindow {
                 id: navBlock
                 Layout.fillWidth: true
                 padding: 4
-                blockRadius: Theme.geometry.radius
 
                 BaseMultiButton {
                     id: navButton

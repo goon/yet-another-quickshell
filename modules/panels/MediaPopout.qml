@@ -268,7 +268,6 @@ BasePopoutWindow {
                 BaseButton {
                     id: prevBtn
                     size: Theme.dimensions.iconBase
-                    normalColor: Theme.colors.transparent
                     hoverGradient: true
                     icon: "skip_previous"
                     enabled: Media.canGoPrevious
@@ -290,7 +289,6 @@ BasePopoutWindow {
 
                 BaseButton {
                     size: Theme.dimensions.iconBase
-                    normalColor: Theme.colors.transparent
                     hoverGradient: true
                     icon: Media.playbackState === MprisPlaybackState.Playing ? "pause" : "play_arrow"
                     enabled: Media.activePlayer !== null
@@ -303,7 +301,6 @@ BasePopoutWindow {
                 BaseButton {
                     id: nextBtn
                     size: Theme.dimensions.iconBase
-                    normalColor: Theme.colors.transparent
                     hoverGradient: true
                     icon: "skip_next"
                     enabled: Media.canGoNext

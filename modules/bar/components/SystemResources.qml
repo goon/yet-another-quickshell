@@ -13,7 +13,6 @@ BaseBlock {
     paddingVertical: 0
     clickable: true
     hoverEnabled: false
-    blockRadius: Theme.geometry.radius
     
     Component.onCompleted: PopoutService.systemResourcesItem = root
     Component.onDestruction: PopoutService.systemResourcesItem = null

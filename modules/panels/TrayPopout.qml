@@ -56,7 +56,6 @@ BasePopoutWindow {
             id: trayBlock
             width: parent.width
             padding: Theme.geometry.spacing.dynamicPadding
-            blockRadius: Theme.geometry.radius
 
             ColumnLayout {
                 id: menuColumn
@@ -83,7 +82,6 @@ BasePopoutWindow {
                             visible: !isSeparator
                             gradient: true
                             selected: containsMouse
-                            normalColor: Theme.colors.transparent
                             hoverColor: Theme.colors.transparent
                             
                             onClicked: {

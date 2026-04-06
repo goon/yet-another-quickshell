@@ -25,7 +25,7 @@ Rectangle {
     property int textSize: Theme.typography.size.base
     property alias textWeight: root.weight
     property int weight: (root.gradient && root.selected) || (root.hoverGradient && mouseArea.containsMouse) ? Theme.typography.weights.bold : Theme.typography.weights.normal
-    property color normalColor: Theme.colors.surface
+    property color normalColor: Theme.colors.transparent
     property color hoverColor: Theme.colors.transparent
     property color activeColor: Theme.colors.transparent
     property color borderColor: Theme.colors.transparent

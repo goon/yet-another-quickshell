@@ -10,9 +10,7 @@ BaseBlock {
     Layout.fillWidth: false
     implicitWidth: layout.implicitWidth + (paddingHorizontal * 2)
     implicitHeight: Theme.dimensions.barItemHeight
-    paddingHorizontal: Theme.geometry.spacing.dynamicPadding
     paddingVertical: 0
-    blockRadius: Theme.geometry.radius
     clickable: true
     hoverEnabled: false
 

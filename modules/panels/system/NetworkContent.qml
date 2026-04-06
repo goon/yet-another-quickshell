@@ -23,7 +23,6 @@ ColumnLayout {
         id: interfaceToggle
         Layout.fillWidth: true
         padding: 4
-        blockRadius: Theme.geometry.radius
 
         property int selectedTab: -1
         readonly property int currentIndex: selectedTab !== -1 ? selectedTab : (Network.wifiEnabled ? 1 : 0)
@@ -210,8 +209,8 @@ ColumnLayout {
                                 textSize: 10
                                 textWeight: Theme.typography.weights.bold
                                 textColor: Theme.colors.text
-                                paddingHorizontal: 16
-                                paddingVertical: 8
+                                paddingHorizontal: Theme.geometry.spacing.dynamicPadding
+                                paddingVertical: Theme.geometry.spacing.medium
                                 normalColor: Theme.alpha(Theme.colors.error, 0.6)
                                 hoverColor: Theme.alpha(Theme.colors.error, 0.8)
                                 onClicked: Network.disconnectWifi()
@@ -362,9 +361,8 @@ ColumnLayout {
                                         textSize: 10
                                         textWeight: Theme.typography.weights.bold
                                         textColor: Theme.colors.text
-                                        paddingHorizontal: 16
-                                        paddingVertical: 8
-                                        normalColor: Theme.colors.transparent
+                                        paddingHorizontal: Theme.geometry.spacing.dynamicPadding
+                                        paddingVertical: Theme.geometry.spacing.medium
                                         hoverColor: Theme.alpha(Theme.colors.text, 0.1)
                                         
                                         onClicked: {
