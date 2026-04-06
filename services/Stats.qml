@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs
 
 QtObject {
@@ -46,6 +47,15 @@ QtObject {
     
     // --- Drive/Partition Information ---
     property var drives: []
+
+    // --- File Readers ---
+    property FileView cpuFile: FileView { path: "/proc/stat" }
+    property FileView memFile: FileView { path: "/proc/meminfo" }
+    property FileView netFile: FileView { path: "/proc/net/dev" }
+    property FileView diskFile: FileView { path: "/proc/diskstats" }
+    property FileView cpuTempFile: FileView { path: root.cpuTempPath || "/sys/class/thermal/thermal_zone0/temp" }
+    property FileView gpuTempFile: FileView { path: root.gpuTempPath }
+    property FileView gpuLoadFile: FileView { path: root.gpuLoadPath }
 
     Component.onCompleted: {
         // Broad search for AMD GPU temperature path
@@ -368,26 +378,29 @@ QtObject {
     }
 
     function updateFast() {
-        var tempCmd = root.cpuTempPath ? "cat " + root.cpuTempPath : "[ -f /sys/class/thermal/thermal_zone0/temp ] && cat /sys/class/thermal/thermal_zone0/temp || echo 0";
-        var cmd = "cat /proc/stat; echo '---SEP---'; cat /proc/meminfo; echo '---SEP---'; " + tempCmd + "; echo '---SEP---'; cat /proc/net/dev; echo '---SEP---'; cat /proc/diskstats";
+        // Trigger reloads of all reactive file views
+        // This is significantly cheaper than spawning 'cat' via a shell process
+        cpuFile.reload();
+        memFile.reload();
+        cpuTempFile.reload();
+        netFile.reload();
+        diskFile.reload();
         
-        if (root.gpuTempPath) cmd += "; echo '---SEP---'; cat " + root.gpuTempPath;
-        if (root.gpuLoadPath) cmd += "; echo '---SEP---'; [ -f \"" + root.gpuLoadPath + "\" ] && cat \"" + root.gpuLoadPath + "\" || echo 0";
-
-        ProcessService.run(["sh", "-c", cmd], function(out) {
-            if (!out) return;
-            var sections = out.split("---SEP---");
-            if (sections.length >= 5) {
-                parseCpu(sections[0]);
-                parseMem(sections[1]);
-                parseTemp(sections[2]);
-                parseNet(sections[3]);
-                parseDiskStat(sections[4]);
-                
-                if (root.gpuTempPath && sections[5]) parseAmdTemp(sections[5]);
-                if (root.gpuLoadPath && sections[6]) parseAmdLoad(sections[6]);
-            }
-        });
+        parseCpu(cpuFile.text());
+        parseMem(memFile.text());
+        parseTemp(cpuTempFile.text());
+        parseNet(netFile.text());
+        parseDiskStat(diskFile.text());
+        
+        if (root.gpuTempPath) {
+            gpuTempFile.reload();
+            parseAmdTemp(gpuTempFile.text());
+        }
+        
+        if (root.gpuLoadPath) {
+            gpuLoadFile.reload();
+            parseAmdLoad(gpuLoadFile.text());
+        }
     }
 
     function updateSlow() {
