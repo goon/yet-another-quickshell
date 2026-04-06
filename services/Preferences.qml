@@ -58,8 +58,6 @@ QtObject {
     property string webSearchUrl: Config.webSearchUrl
     property string terminal: Config.terminal
     property string wallpaperDirectory: ""
-    property bool wallpaperParallaxEnabled: false
-    property int wallpaperParallaxStrength: 20
     
     // Presets Configuration
     property var presets: ({})
@@ -110,8 +108,6 @@ QtObject {
             "wallpaperDirectory": root.wallpaperDirectory,
             "currentThemeColors": root.currentThemeColors,
             "currentWallpaper": root.currentWallpaper,
-            "wallpaperParallaxEnabled": root.wallpaperParallaxEnabled,
-            "wallpaperParallaxStrength": root.wallpaperParallaxStrength,
             "workspaceStyle": root.workspaceStyle,
             "presets": root.presets
         };
@@ -248,8 +244,6 @@ QtObject {
     onWallpaperDirectoryChanged: requestSave("wallpaperDirectory")
     onCurrentThemeColorsChanged: requestSave("currentThemeColors")
     onCurrentWallpaperChanged: requestSave("currentWallpaper")
-    onWallpaperParallaxEnabledChanged: requestSave("wallpaperParallaxEnabled")
-    onWallpaperParallaxStrengthChanged: requestSave("wallpaperParallaxStrength")
     Component.onCompleted: {
         prefsFileView.reload();
     }
@@ -406,12 +400,6 @@ QtObject {
 
                     if (data.hasOwnProperty("currentWallpaper"))
                         root.currentWallpaper = data.currentWallpaper;
-
-                    if (data.hasOwnProperty("wallpaperParallaxEnabled"))
-                        root.wallpaperParallaxEnabled = data.wallpaperParallaxEnabled;
-
-                    if (data.hasOwnProperty("wallpaperParallaxStrength"))
-                        root.wallpaperParallaxStrength = data.wallpaperParallaxStrength;
 
                     if (data.hasOwnProperty("workspaceStyle"))
                         root.workspaceStyle = data.workspaceStyle;

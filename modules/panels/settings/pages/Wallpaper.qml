@@ -15,7 +15,7 @@ SettingsPage {
         Layout.fillWidth: true
 
         BaseText {
-            text: "Configure your desktop background, dynamic theming, and visual effects."
+            text: "Configure your desktop background and dynamic theming."
             color: Theme.colors.text
             pixelSize: Theme.typography.size.medium
             Layout.fillWidth: true
@@ -37,6 +37,7 @@ SettingsPage {
         BaseText {
             text: "Enable Gowall Theming:"
             pixelSize: Theme.typography.size.medium
+            Layout.fillWidth: true
         }
 
         BaseSwitch {
@@ -48,6 +49,7 @@ SettingsPage {
         BaseText {
             text: "Wallpaper Gallery:"
             pixelSize: Theme.typography.size.medium
+            Layout.fillWidth: true
         }
 
         BaseButton {
@@ -64,64 +66,6 @@ SettingsPage {
             Layout.bottomMargin: Theme.geometry.spacing.medium
         }
 
-        // --- Visual Effects ---
-        BaseText {
-            text: "Visual Effects"
-            weight: Theme.typography.weights.bold
-            color: Theme.colors.primary
-            pixelSize: Theme.typography.size.large
-            Layout.columnSpan: 2
-            Layout.topMargin: Theme.geometry.spacing.large
-        }
-
-        BaseText {
-            text: "Parallax Effect:"
-            pixelSize: Theme.typography.size.medium
-        }
-
-        BaseSwitch {
-            checked: Preferences.wallpaperParallaxEnabled
-            onToggled: Preferences.wallpaperParallaxEnabled = checked
-            Layout.alignment: Qt.AlignLeft
-        }
-
-        BaseText {
-            text: "Parallax Strength:"
-            pixelSize: Theme.typography.size.medium
-            enabled: Preferences.wallpaperParallaxEnabled
-            opacity: enabled ? 1 : 0.5
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Theme.geometry.spacing.large
-            enabled: Preferences.wallpaperParallaxEnabled
-            opacity: enabled ? 1 : 0.5
-
-            BaseSlider {
-                id: strengthSlider
-                Layout.fillWidth: true
-                from: 5
-                to: 100
-                stepSize: 1
-                value: Preferences.wallpaperParallaxEnabled ? Preferences.wallpaperParallaxStrength : 20
-                onMoved: Preferences.wallpaperParallaxStrength = Math.round(value)
-            }
-
-            BaseText {
-                text: Math.round(strengthSlider.value) + "px"
-                Layout.preferredWidth: 40
-                horizontalAlignment: Text.AlignRight
-            }
-        }
-
-        BaseSeparator {
-            Layout.fillWidth: true
-            Layout.columnSpan: 2
-            Layout.topMargin: Theme.geometry.spacing.medium
-            Layout.bottomMargin: Theme.geometry.spacing.medium
-        }
-
         // --- Storage ---
         BaseText {
             text: "Storage"
@@ -129,7 +73,7 @@ SettingsPage {
             color: Theme.colors.primary
             pixelSize: Theme.typography.size.large
             Layout.columnSpan: 2
-            Layout.topMargin: Theme.geometry.spacing.large
+            Layout.topMargin: Theme.geometry.spacing.medium
         }
 
         BaseText {
@@ -213,6 +157,12 @@ SettingsPage {
                     }
                 }
             }
+        }
+
+        // --- Spacer to push everything to the top ---
+        Item {
+            Layout.fillHeight: true
+            Layout.columnSpan: 2
         }
     }
 }
