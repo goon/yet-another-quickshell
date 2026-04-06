@@ -89,7 +89,6 @@ ShellRoot {
         WallpaperBackground {
             screen: modelData
         }
-
     }
 
     Instantiator {
