@@ -27,7 +27,7 @@ LauncherTab {
 
     function activateCurrentItem() {
         if (root.currentItem) {
-            Clipboard.copyToClipboard(root.currentItem.clipboardContent);
+            Clipboard.pasteCliphistItem(root.currentItem.rawLine);
             root.closeRequested();
         }
     }
@@ -40,10 +40,10 @@ LauncherTab {
     function deleteCurrentItem() {
         if (clipboardListView.currentIndex >= 0 && filteredModel.count > 0) {
             var item = filteredModel.get(clipboardListView.currentIndex);
-            // We need to find the actual index in the Clipboard service history
+            // We need to find the actual item in the Clipboard service history
             for (var i = 0; i < Clipboard.history.count; i++) {
-                if (Clipboard.history.get(i).text === item.clipboardContent) {
-                    Clipboard.deleteItem(i);
+                if (Clipboard.history.get(i).rawLine === item.rawLine) {
+                    Clipboard.deleteCliphistItem(item.rawLine);
                     break;
                 }
             }
@@ -75,6 +75,7 @@ LauncherTab {
                 filteredModel.append({
                     "name": item.text.replace(/\n/g, " ").substring(0, 100),
                     "clipboardContent": item.text,
+                    "rawLine": item.rawLine,
                     "description": item.isImage ? "Image file" : "Text snippet",
                     "icon": item.isImage ? "image" : "content_copy",
                     "category": "Clipboard",
