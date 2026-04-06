@@ -13,15 +13,16 @@ ShellRoot {
 
     objectName: "shellRoot"
     Component.onCompleted: {
-        PopoutService.launcher = launcher;
-        PopoutService.settings = settings;
-        PopoutService.mediaPopout = mediaPopout;
-        PopoutService.notificationPopout = notificationPopout;
+        PopoutService.launcherLoader = launcherLoader;
+        PopoutService.settingsLoader = settingsLoader;
+        PopoutService.mediaPopoutLoader = mediaPopoutLoader;
+        PopoutService.notificationPopoutLoader = notificationPopoutLoader;
         PopoutService.notificationManager = Notifications;
-        PopoutService.systemPopout = systemPopout;
-        PopoutService.audioPopout = audioPopout;
-        PopoutService.calendarPopout = calendarPopout;
-        PopoutService.systemControlPopout = systemControlPopout;
+        PopoutService.systemPopoutLoader = systemPopoutLoader;
+        PopoutService.audioPopoutLoader = audioPopoutLoader;
+        PopoutService.calendarPopoutLoader = calendarPopoutLoader;
+        PopoutService.systemControlPopoutLoader = systemControlPopoutLoader;
+        PopoutService.fileDialogLoader = fileDialogLoader;
     }
 
     Commander {
@@ -33,37 +34,52 @@ ShellRoot {
     }
 
     // Windows / Overlays
-    Launcher {
-        id: launcher
+    BaseLazyLoader {
+        id: launcherLoader
+        source: Qt.resolvedUrl("modules/panels/launcher/Launcher.qml")
     }
 
-    Settings {
-        id: settings
+    BaseLazyLoader {
+        id: settingsLoader
+        source: Qt.resolvedUrl("modules/panels/settings/Settings.qml")
     }
 
-    MediaPopout {
-        id: mediaPopout
+    BaseLazyLoader {
+        id: mediaPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/MediaPopout.qml")
     }
 
-    SystemControlPopout {
-        id: systemControlPopout
+    BaseLazyLoader {
+        id: systemControlPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/system/SystemControlPopout.qml")
     }
 
-    NotificationPopout {
-        id: notificationPopout
-        notificationManager: Notifications
+    BaseLazyLoader {
+        id: notificationPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/NotificationPopout.qml")
+        onLoaded: {
+            if (item) item.notificationManager = Notifications;
+        }
     }
 
-    SystemPopout {
-        id: systemPopout
+    BaseLazyLoader {
+        id: systemPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/SystemPopout.qml")
     }
 
-    AudioPopout {
-        id: audioPopout
+    BaseLazyLoader {
+        id: audioPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/AudioPopout.qml")
     }
 
-    CalendarPopout {
-        id: calendarPopout
+    BaseLazyLoader {
+        id: calendarPopoutLoader
+        source: Qt.resolvedUrl("modules/panels/CalendarPopout.qml")
+    }
+
+    BaseLazyLoader {
+        id: fileDialogLoader
+        source: Qt.resolvedUrl("modules/filedialog/FileDialogWindow.qml")
     }
 
 
