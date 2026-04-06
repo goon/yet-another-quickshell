@@ -39,6 +39,15 @@ Item {
         target: "wallpaper"
     }
 
+    // Clipboard
+    IpcHandler {
+        function toggle() {
+            PopoutService.toggleClipboard();
+        }
+
+        target: "clipboard"
+    }
+
     // Theme
     IpcHandler {
         function apply(id: string) { ThemeService.setTheme(id); }
