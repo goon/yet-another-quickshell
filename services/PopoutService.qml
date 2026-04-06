@@ -6,19 +6,31 @@ pragma Singleton
 QtObject {
     id: root
 
-    // Pointers to the various panels injected by shell.qml
-    property var launcher: null
-    property var settings: null
-    property var mediaPopout: null
-    property var systemPopout: null
-    property var audioPopout: null
-    property var calendarPopout: null
-    property var notificationPopout: null
+    // Pointers to the various loaders injected by shell.qml
+    property var launcherLoader: null
+    property var settingsLoader: null
+    property var mediaPopoutLoader: null
+    property var systemPopoutLoader: null
+    property var audioPopoutLoader: null
+    property var calendarPopoutLoader: null
+    property var notificationPopoutLoader: null
     property var notificationManager: null
-    property var powerPopout: null
-    property var systemControlPopout: null
+    property var powerPopoutLoader: null
+    property var systemControlPopoutLoader: null
+    property var fileDialogLoader: null
 
-    // Bar component references for automatic anchoring
+    // Helper properties
+    readonly property var launcher: launcherLoader ? launcherLoader.item : null
+    readonly property var settings: settingsLoader ? settingsLoader.item : null
+    readonly property var mediaPopout: mediaPopoutLoader ? mediaPopoutLoader.item : null
+    readonly property var systemPopout: systemPopoutLoader ? systemPopoutLoader.item : null
+    readonly property var audioPopout: audioPopoutLoader ? audioPopoutLoader.item : null
+    readonly property var calendarPopout: calendarPopoutLoader ? calendarPopoutLoader.item : null
+    readonly property var notificationPopout: notificationPopoutLoader ? notificationPopoutLoader.item : null
+    readonly property var powerPopout: powerPopoutLoader ? powerPopoutLoader.item : null
+    readonly property var systemControlPopout: systemControlPopoutLoader ? systemControlPopoutLoader.item : null
+    readonly property var fileDialog: fileDialogLoader ? fileDialogLoader.item : null
+
     property Item launcherItem: null
     property Item systemResourcesItem: null
     property Item systemControlItem: null
@@ -27,226 +39,153 @@ QtObject {
     property Item nowPlayingItem: null
     property Item clockItem: null
 
-    // Track state
-    property var activePanel: null
-    
-    // Track bar geometry for dimming cutouts
+    property var activePanelLoader: null
     property int barWidth: 0
 
+    // --- Robust One-Shot Listener ---
+    function _runWhenReady(loader, action) {
+        if (!loader) return;
+        if (loader.status === Loader.Ready) {
+            action();
+        } else {
+            var comp = Qt.createComponent(Qt.resolvedUrl("BaseLazyListener.qml"));
+            if (comp.status === Component.Ready) {
+                comp.createObject(root, { "loader": loader, "callback": action });
+            }
+        }
+    }
+
+    // --- COORDINATE MATH ---
     function _getCoordinatesFromItem(item) {
         if (!item) return undefined;
-        
         try {
             var posInWindow = item.mapToItem(null, item.width / 2, 0);
             var topParent = item;
             while (topParent.parent) topParent = topParent.parent;
-            var barWidth = topParent.width;
-
+            var bW = topParent.width;
             var screen = Quickshell.screens[0];
-            var barScreenX;
-            if (Preferences.barFitToContent) {
-                barScreenX = (screen.width - barWidth) / 2;
-            } else {
-                barScreenX = Preferences.barMarginSide;
-            }
-
-            return {
-                screenX: barScreenX + posInWindow.x,
-                barLeft: barScreenX,
-                barRight: barScreenX + barWidth
-            };
-        } catch (e) {
-            return undefined;
-        }
+            var barScreenX = Preferences.barFitToContent ? (screen.width - bW) / 2 : Preferences.barMarginSide;
+            return { screenX: barScreenX + posInWindow.x, barLeft: barScreenX, barRight: barScreenX + bW };
+        } catch (e) { return undefined; }
     }
 
-    function toggleLauncher() {
-        _toggle(launcher);
-    }
+    // --- TOGGLE ACTIONS ---
+    function toggleLauncher() { _toggle(launcherLoader); }
 
     function toggleWallpaper() {
-        if (!launcher)
-            return ;
-
-        // If another panel is open (and it's not the launcher), close it
-        if (activePanel && activePanel !== launcher)
-            activePanel.close();
-
-        // Open/Toggle logic
-        if (launcher.panelState !== "Open" && launcher.panelState !== "Opening") {
-            launcher.open();
-            activePanel = launcher;
+        if (!launcherLoader) return;
+        if (activePanelLoader && activePanelLoader !== launcherLoader) activePanelLoader.close();
+        
+        if (!launcherLoader.active || (launcherLoader.item && launcherLoader.item.panelState !== "Open")) {
+            launcherLoader.toggle();
+            activePanelLoader = launcherLoader;
         }
-        launcher.switchToTab(2);
+        _runWhenReady(launcherLoader, () => { launcherLoader.item.switchToTab(2); });
     }
 
-    function toggleSettings() {
-        _toggle(settings);
-    }
+    function toggleSettings() { _toggle(settingsLoader); }
 
     function toggleMediaPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && nowPlayingItem) {
             var coords = _getCoordinatesFromItem(nowPlayingItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (mediaPopout) {
-            mediaPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) mediaPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) mediaPopout.anchorMaxX = barRight;
-        }
-        _toggle(mediaPopout);
+        _applyAnchors(mediaPopoutLoader, screenX, barLeft, barRight);
+        _toggle(mediaPopoutLoader);
     }
 
     function toggleNotificationPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && notificationsItem) {
             var coords = _getCoordinatesFromItem(notificationsItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (notificationPopout) {
-            notificationPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) notificationPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) notificationPopout.anchorMaxX = barRight;
-        }
-        _toggle(notificationPopout);
+        _applyAnchors(notificationPopoutLoader, screenX, barLeft, barRight);
+        _toggle(notificationPopoutLoader);
     }
 
     function toggleSystemPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && systemResourcesItem) {
             var coords = _getCoordinatesFromItem(systemResourcesItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (systemPopout) {
-            systemPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) systemPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) systemPopout.anchorMaxX = barRight;
-        }
-        _toggle(systemPopout);
+        _applyAnchors(systemPopoutLoader, screenX, barLeft, barRight);
+        _toggle(systemPopoutLoader);
     }
 
     function toggleAudioPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && volumeItem) {
             var coords = _getCoordinatesFromItem(volumeItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (audioPopout) {
-            audioPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) audioPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) audioPopout.anchorMaxX = barRight;
-        }
-        _toggle(audioPopout);
+        _applyAnchors(audioPopoutLoader, screenX, barLeft, barRight);
+        _toggle(audioPopoutLoader);
     }
 
     function toggleCalendarPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && clockItem) {
             var coords = _getCoordinatesFromItem(clockItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (calendarPopout) {
-            calendarPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) calendarPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) calendarPopout.anchorMaxX = barRight;
-        }
-        _toggle(calendarPopout);
+        _applyAnchors(calendarPopoutLoader, screenX, barLeft, barRight);
+        _toggle(calendarPopoutLoader);
     }
 
     function togglePowerPopout(screenX, barLeft, barRight) {
         if (screenX === undefined && systemControlItem) {
             var coords = _getCoordinatesFromItem(systemControlItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (powerPopout) {
-            powerPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            if (barLeft !== undefined) powerPopout.anchorMinX = barLeft;
-            if (barRight !== undefined) powerPopout.anchorMaxX = barRight;
-        }
-        _toggle(powerPopout);
+        _applyAnchors(systemControlPopoutLoader, screenX, barLeft, barRight);
+        _toggle(systemControlPopoutLoader);
     }
 
-    // --- UNIFIED SYSTEM CONTROL ---
     function toggleSystemControl(screenX, barLeft, barRight, initialTab) {
         if (screenX === undefined && systemControlItem) {
             var coords = _getCoordinatesFromItem(systemControlItem);
-            if (coords) {
-                screenX = coords.screenX;
-                barLeft = coords.barLeft;
-                barRight = coords.barRight;
-            }
+            if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-
-        if (systemControlPopout) {
-            systemControlPopout.anchorX = (screenX !== undefined) ? screenX : -1;
-            systemControlPopout.anchorMinX = (barLeft !== undefined) ? barLeft : -1;
-            systemControlPopout.anchorMaxX = (barRight !== undefined) ? barRight : -1;
-        }
+        _applyAnchors(systemControlPopoutLoader, screenX, barLeft, barRight);
         
-        // If we are opening the panel, set the tab
-        if (systemControlPopout && systemControlPopout.panelState !== "Open" && systemControlPopout.panelState !== "Opening") {
-            if (initialTab !== undefined) {
-                systemControlPopout.switchToTab(initialTab);
-            }
+        if (systemControlPopoutLoader) {
+            _runWhenReady(systemControlPopoutLoader, () => {
+                if (systemControlPopoutLoader.item.panelState !== "Open") {
+                    if (initialTab !== undefined) systemControlPopoutLoader.item.switchToTab(initialTab);
+                }
+            });
         }
-        
-        _toggle(systemControlPopout);
+        _toggle(systemControlPopoutLoader);
     }
 
-    // Generic toggle for any tracked panel
-    function _toggle(panel) {
-        if (!panel)
-            return ;
-
-        // Close any open tray menu whenever a bar popout is toggled
-        TrayService.closeCurrentMenu();
-
-        // If this one is currently active, just toggle it
-        if (activePanel === panel) {
-            panel.toggle();
-            // If we are toggling the active panel, it is closing.
-            activePanel = null;
-            return ;
+    function openFileDialog(initialPath, callback) {
+        if (fileDialogLoader) {
+            fileDialogLoader.active = true;
+            _runWhenReady(fileDialogLoader, () => { fileDialogLoader.item.open(initialPath, callback); });
         }
-        // If another panel is open, close it first
-        if (activePanel)
-            activePanel.close();
+    }
 
-        // Open the new panel
-        panel.toggle();
-        activePanel = panel;
+    function _applyAnchors(loader, screenX, barLeft, barRight) {
+        _runWhenReady(loader, () => {
+            var item = loader.item;
+            item.anchorX = (screenX !== undefined) ? screenX : -1;
+            item.anchorMinX = (barLeft !== undefined) ? barLeft : -1;
+            item.anchorMaxX = (barRight !== undefined) ? barRight : -1;
+        });
+    }
+
+    function _toggle(loader) {
+        if (!loader) return;
+        TrayService.closeCurrentMenu();
+        if (activePanelLoader === loader) {
+            loader.toggle();
+            activePanelLoader = null;
+            return;
+        }
+        if (activePanelLoader) activePanelLoader.close();
+        loader.toggle();
+        activePanelLoader = loader;
     }
 
     function closeAll() {
-        if (activePanel) {
-            activePanel.close();
-            activePanel = null;
-        }
+        if (activePanelLoader) { activePanelLoader.close(); activePanelLoader = null; }
     }
 }
