@@ -28,6 +28,7 @@ QtObject {
     property int barDensity: 1 // 0: Compact, 1: Default, 2: Comfortable
     property int notificationDensity: 1 // 0: Compact, 1: Comfortable
     property int workspaceStyle: 0 // 0: Arabic, 1: Roman, 2: Kanji
+    property int popoutTrigger: 0 // 0: Click, 1: Hover
 
     // State Persistence (Shared with Theme/Wallpaper services)
     property var currentThemeColors: ({})
@@ -92,6 +93,7 @@ QtObject {
             "shellFont": root.shellFont,
             "barDensity": root.barDensity,
             "notificationDensity": root.notificationDensity,
+            "popoutTrigger": root.popoutTrigger,
             "barHeight": root.barHeight,
 
             "barMarginTop": root.barMarginTop,
@@ -229,6 +231,7 @@ QtObject {
     }
     onNotificationDensityChanged: requestSave("notificationDensity")
     onWorkspaceStyleChanged: requestSave("workspaceStyle")
+    onPopoutTriggerChanged: requestSave("popoutTrigger")
 
     onBarHeightChanged: requestSave("barHeight")
     onBarMarginTopChanged: requestSave("barMarginTop")
@@ -328,6 +331,9 @@ QtObject {
 
                     if (data.hasOwnProperty("notificationDensity"))
                         root.notificationDensity = data.notificationDensity;
+
+                    if (data.hasOwnProperty("popoutTrigger"))
+                        root.popoutTrigger = data.popoutTrigger;
 
 
                     if (data.hasOwnProperty("barHeight"))

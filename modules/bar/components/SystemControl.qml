@@ -26,6 +26,8 @@ Item {
         onClicked: {
             PopoutService.toggleSystemControl();
         }
+        popoutOnHover: true
+        onHoverAction: PopoutService.openPowerPopout
 
         BaseIcon {
             Layout.alignment: Qt.AlignCenter

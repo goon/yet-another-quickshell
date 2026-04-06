@@ -28,6 +28,8 @@ Item {
         onClicked: {
             PopoutService.toggleNotificationPopout();
         }
+        popoutOnHover: true
+        onHoverAction: PopoutService.openNotificationPopout
         onRightClicked: {
             Preferences.notificationMode = root.dndActive ? 0 : 1;
         }

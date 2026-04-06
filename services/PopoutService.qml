@@ -138,6 +138,61 @@ QtObject {
         _toggle(systemControlPopoutLoader);
     }
 
+    // --- OPEN ACTIONS (FOR HOVER) ---
+    function openMediaPopout() {
+        var sx, bl, br;
+        if (nowPlayingItem) {
+            var c = _getCoordinatesFromItem(nowPlayingItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(mediaPopoutLoader, sx, bl, br);
+    }
+    
+    function openNotificationPopout() {
+        var sx, bl, br;
+        if (notificationsItem) {
+            var c = _getCoordinatesFromItem(notificationsItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(notificationPopoutLoader, sx, bl, br);
+    }
+
+    function openSystemPopout() {
+        var sx, bl, br;
+        if (systemResourcesItem) {
+            var c = _getCoordinatesFromItem(systemResourcesItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(systemPopoutLoader, sx, bl, br);
+    }
+
+    function openAudioPopout() {
+        var sx, bl, br;
+        if (volumeItem) {
+            var c = _getCoordinatesFromItem(volumeItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(audioPopoutLoader, sx, bl, br);
+    }
+
+    function openCalendarPopout() {
+        var sx, bl, br;
+        if (clockItem) {
+            var c = _getCoordinatesFromItem(clockItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(calendarPopoutLoader, sx, bl, br);
+    }
+
+    function openPowerPopout() {
+        var sx, bl, br;
+        if (systemControlItem) {
+            var c = _getCoordinatesFromItem(systemControlItem);
+            if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
+        }
+        _ensureOpen(systemControlPopoutLoader, sx, bl, br);
+    }
+
     function toggleSystemControl(screenX, barLeft, barRight, initialTab) {
         if (screenX === undefined && systemControlItem) {
             var coords = _getCoordinatesFromItem(systemControlItem);
@@ -182,6 +237,23 @@ QtObject {
         }
         if (activePanelLoader) activePanelLoader.close();
         loader.toggle();
+        activePanelLoader = loader;
+    }
+
+    function _ensureOpen(loader, screenX, barLeft, barRight) {
+        if (!loader) return;
+        if (activePanelLoader === loader) return; // Already open
+
+        TrayService.closeCurrentMenu();
+        if (activePanelLoader) activePanelLoader.close();
+
+        _applyAnchors(loader, screenX, barLeft, barRight);
+        loader.active = true;
+        loader.runWhenReady(() => {
+            if (loader.item.panelState !== "Open") {
+                loader.item.open();
+            }
+        });
         activePanelLoader = loader;
     }
 

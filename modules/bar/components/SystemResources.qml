@@ -20,6 +20,8 @@ BaseBlock {
     onClicked: {
         PopoutService.toggleSystemPopout();
     }
+    popoutOnHover: true
+    onHoverAction: PopoutService.openSystemPopout
 
     RowLayout {
         id: layout

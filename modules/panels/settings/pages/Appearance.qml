@@ -230,6 +230,27 @@ SettingsPage {
             }
 
             BaseText {
+                text: "Popout Trigger:"
+                pixelSize: Theme.typography.size.medium
+            }
+
+            BaseComboBox {
+                Layout.fillWidth: true
+                textRole: "label"
+                model: [{
+                    "label": "On Click",
+                    "value": 0
+                }, {
+                    "label": "On Hover",
+                    "value": 1
+                }]
+                currentIndex: Preferences.popoutTrigger
+                onActivated: (index) => {
+                    Preferences.popoutTrigger = model[index].value;
+                }
+            }
+
+            BaseText {
                 text: "Background Blur:"
                 pixelSize: Theme.typography.size.medium
             }

@@ -31,6 +31,8 @@ Rectangle {
     property bool clickable: false
     property bool hoverEnabled: true
     property bool premiumHover: false
+    property bool popoutOnHover: false
+    property var onHoverAction: null
     readonly property alias containsMouse: mouseArea.containsMouse
     readonly property alias pressed: mouseArea.pressed
     // Internal layout control
@@ -54,6 +56,12 @@ Rectangle {
     Behavior on scale {
         BaseAnimation {
             duration: Theme.animations.fast
+        }
+    }
+
+    onContainsMouseChanged: {
+        if (containsMouse && Preferences.popoutTrigger === 1 && popoutOnHover && onHoverAction) {
+            onHoverAction();
         }
     }
 

@@ -30,6 +30,8 @@ Item {
         onClicked: {
             PopoutService.toggleMediaPopout();
         }
+        popoutOnHover: true
+        onHoverAction: PopoutService.openMediaPopout
 
         implicitWidth: mediaWidget.implicitWidth + (paddingHorizontal * 2)
 

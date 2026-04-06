@@ -20,6 +20,8 @@ BaseBlock {
     onClicked: {
         PopoutService.toggleAudioPopout();
     }
+    popoutOnHover: true
+    onHoverAction: PopoutService.openAudioPopout
     onRightClicked: Volume.toggleMute()
 
     // Wrap content to avoid ColumnLayout vs Anchors conflict in BaseBlock

@@ -19,6 +19,8 @@ BaseBlock {
     onClicked: {
         PopoutService.toggleCalendarPopout();
     }
+    popoutOnHover: true
+    onHoverAction: PopoutService.openCalendarPopout
 
     // Now supported natively by BaseBlock
     onMiddleClicked: {
