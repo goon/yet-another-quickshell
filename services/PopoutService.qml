@@ -242,6 +242,15 @@ QtObject {
 
     function _ensureOpen(loader, screenX, barLeft, barRight) {
         if (!loader) return;
+        
+        // If the current active panel was closed independently (e.g. Escape or click outside),
+        // reset the pointer so we can re-open it or open a new one.
+        if (activePanelLoader && activePanelLoader.item && 
+            activePanelLoader.item.panelState !== "Open" && 
+            activePanelLoader.item.panelState !== "Opening") {
+            activePanelLoader = null;
+        }
+
         if (activePanelLoader === loader) return; // Already open
 
         TrayService.closeCurrentMenu();
@@ -250,7 +259,7 @@ QtObject {
         _applyAnchors(loader, screenX, barLeft, barRight);
         loader.active = true;
         loader.runWhenReady(() => {
-            if (loader.item.panelState !== "Open") {
+            if (loader.item.panelState !== "Open" && loader.item.panelState !== "Opening") {
                 loader.item.open();
             }
         });
