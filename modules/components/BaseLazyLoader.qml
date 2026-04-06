@@ -35,7 +35,22 @@ Item {
     function close() {
         if (loader.active && loader.status === Loader.Ready)
             loader.item.close();
+    }
 
+    function runWhenReady(callback) {
+        if (!loader.active)
+            loader.active = true;
+
+        if (loader.status === Loader.Ready) {
+            callback();
+        } else {
+            var connection = loader.statusChanged.connect(function() {
+                if (loader.status === Loader.Ready) {
+                    callback();
+                    loader.statusChanged.disconnect(connection);
+                }
+            });
+        }
     }
 
     Loader {
