@@ -8,130 +8,141 @@ QtObject {
     id: root
 
     property ListModel history
-    readonly property string historyFile: Config.cacheDir + "/clipboard-history.json"
-    readonly property string imagesDir: Config.cacheDir + "/clipboard-images"
-    property int maxItems: 50
-    property string _lastText: ""
-    property string _lastImageHash: ""
-    // Persistence
-    property FileView historyFileView
-    property Timer pollTimer
+    readonly property string cliphistDb: "/home/michael/.cache/cliphist/db"
+    readonly property string imagesDir: Config.cacheDir + "/cliphist-thumbnails"
+    
+    // A FileView to watch the cliphist database
+    property FileView dbWatcher
+    property Timer throttleTimer
 
-    function saveHistory() {
-        var data = [];
-        for (var i = 0; i < history.count; i++) {
-            data.push(history.get(i).text);
-        }
-        // Ensure directory exists then write via ProcessService because FileView might fail on new dirs
-        var jsonStr = JSON.stringify(data);
-        ProcessService.runDetached(["sh", "-c", "mkdir -p \"$(dirname \"$2\")\"; echo \"$1\" > \"$2\"", "--", jsonStr, root.historyFile]);
+    function reloadCliphist() {
+        ProcessService.run(["sh", "-c", "cliphist list | head -n 50"], function(out) {
+            if (out === undefined || out === null) {
+                return;
+            }
+            if (out === "") {
+                root.history.clear();
+                return;
+            }
+            
+            var lines = out.split("\n");
+            var newHistory = [];
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (!line) continue;
+                
+                var match = line.match(/^([0-9]+)\s+(.*)$/);
+                if (!match) continue;
+                
+                var idStr = match[1];
+                var content = match[2];
+                var isImg = content.indexOf("[[ binary data") !== -1;
+                
+                var itemText = content;
+                if (isImg) {
+                    var thumbFile = root.imagesDir + "/item_" + idStr + ".png";
+                    itemText = thumbFile;
+                    // Trigger async decode if thumbnail doesn't exist
+                    ProcessService.runDetached(["sh", "-c", "mkdir -p \"" + root.imagesDir + "\"; if [ ! -f \"" + thumbFile + "\" ]; then echo '" + idStr + "' | cliphist decode > \"" + thumbFile + "\"; fi"]);
+                }
+                
+                newHistory.push({
+                    "id": idStr,
+                    "text": itemText,
+                    "isImage": isImg,
+                    "rawLine": line
+                });
+            }
+            
+            // Model-diffing: Only update if the new list is actually different
+            var isDifferent = newHistory.length !== root.history.count;
+            if (!isDifferent) {
+                for (var k = 0; k < newHistory.length; k++) {
+                    if (newHistory[k].id !== root.history.get(k).id) {
+                        isDifferent = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isDifferent) {
+                root.history.clear();
+                for (var j = 0; j < newHistory.length; j++) {
+                    root.history.append(newHistory[j]);
+                }
+            }
+        });
     }
 
     function addClip(text) {
-        if (!text || text === "" || text === _lastText)
-            return ;
-
-        // Remove existing if duplicate
-        for (var i = 0; i < history.count; i++) {
-            if (history.get(i).text === text) {
-                history.remove(i);
-                break;
-            }
-        }
-        var isImage = text.match(/\.(png|jpg|jpeg|gif|bmp|svg|webp)$/i) && (text.startsWith("/") || text.startsWith("file://"));
-        history.insert(0, {
-            "text": text,
-            "isImage": !!isImage
-        });
-        _lastText = text;
-        if (history.count > maxItems)
-            history.remove(maxItems, history.count - maxItems);
-
-        saveHistory();
+        // Native copying triggers cliphist watcher automatically.
+        copyToClipboard(text);
     }
 
     function copyToClipboard(text) {
         if (!text)
-            return ;
-
-        _lastText = text; // Prevent immediate re-add
+            return;
+        // Text copied normally via UI (if needed anywhere, though the UI mostly pastes)
         ProcessService.runDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "--", text]);
     }
 
+    // copyToClipboard but natively via cliphist (fixes image pasting)
+    function pasteCliphistItem(rawLine) {
+        if (!rawLine) return;
+        ProcessService.runDetached(["sh", "-c", "printf '%s\n' \"$1\" | cliphist decode | wl-copy", "--", rawLine]);
+    }
+
+    function deleteCliphistItem(rawLine) {
+        if (!rawLine) return;
+        
+        // Optimistic UI removal
+        for (var i = 0; i < history.count; i++) {
+            if (history.get(i).rawLine === rawLine) {
+                history.remove(i);
+                break;
+            }
+        }
+
+        ProcessService.runDetached(["sh", "-c", "printf '%s\n' \"$1\" | cliphist delete", "--", rawLine]);
+    }
+
+    // Compatibility method
     function deleteItem(index) {
         if (index >= 0 && index < history.count) {
-            history.remove(index);
-            saveHistory();
+            var rawLine = history.get(index).rawLine;
+            deleteCliphistItem(rawLine);
         }
     }
 
     function clearHistory() {
-        history.clear();
-        saveHistory();
+        ProcessService.runDetached(["sh", "-c", "cliphist wipe"]);
     }
 
     Component.onCompleted: {
-        historyFileView.reload();
+        reloadCliphist();
     }
 
     history: ListModel {
     }
 
-    historyFileView: FileView {
-        path: root.historyFile
-        watchChanges: false
-        onLoadedChanged: {
-            if (loaded) {
-                try {
-                    var data = JSON.parse(text());
-                    if (Array.isArray(data)) {
-                        root.history.clear();
-                        for (var i = 0; i < data.length; i++) {
-                            var textVal = data[i];
-                            var isImg = textVal.match(/\.(png|jpg|jpeg|gif|bmp|svg|webp)$/i) && (textVal.startsWith("/") || textVal.startsWith("file://"));
-                            root.history.append({
-                                "text": textVal,
-                                "isImage": !!isImg
-                            });
-                        }
-                    }
-                } catch (e) {
-                    // console.error("Clipboard: Failed to load history:", e.message);
-                }
-            }
-        }
-    }
+    property string _lastFirstId: ""
 
-    pollTimer: Timer {
+    property Timer pollTimer: Timer {
         interval: 1000
-        running: true
         repeat: true
-        triggeredOnStart: true
+        running: true
         onTriggered: {
-            // 1. Try to get text
-            ProcessService.run(["wl-paste", "-n", "-t", "text"], function(out) {
-                if (out !== undefined && out !== null) {
-                    var text = out.trim();
-                    if (text !== "" && text !== _lastText) {
-                        addClip(text);
-                        return ; // Found text, skip image check for this tick
+            ProcessService.run(["sh", "-c", "cliphist list | head -n 1"], function(out) {
+                if (out && out !== "") {
+                    var match = out.match(/^([0-9]+)\s+/);
+                    if (match && match[1] !== root._lastFirstId) {
+                        root._lastFirstId = match[1];
+                        root.reloadCliphist();
                     }
+                } else if (out === "" && root._lastFirstId !== "") {
+                    root._lastFirstId = "";
+                    root.reloadCliphist();
                 }
-                // 2. No new text, check for image/png
-                ProcessService.run(["sh", "-c", "wl-paste -l | grep -q 'image/png' && wl-paste -t image/png | md5sum"], function(hashOut) {
-                    if (hashOut && hashOut.indexOf(" ") !== -1) {
-                        var hash = hashOut.split(" ")[0];
-                        if (hash !== _lastImageHash) {
-                            var filename = "clip_" + Date.now() + ".png";
-                            var fullPath = root.imagesDir + "/" + filename;
-                            // Save the image
-                            ProcessService.runDetached(["sh", "-c", "mkdir -p \"$1\"; wl-paste -t image/png > \"$2\"", "--", root.imagesDir, fullPath]);
-                            _lastImageHash = hash;
-                            // Add to history as a file path
-                            addClip(fullPath);
-                        }
-                    }
-                });
             });
         }
     }
