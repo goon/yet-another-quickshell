@@ -25,6 +25,13 @@ BaseBlock {
         timeString = Qt.formatDateTime(time, "hh:mm");
     }
 
+    readonly property bool isScreenshot: {
+        if (!root.notification) return false;
+        const app = (root.notification.appName || "").toLowerCase();
+        const sum = (root.notification.summary || "").toLowerCase();
+        return app === "niri" || sum.indexOf("screenshot") !== -1;
+    }
+
     borderWidth: 1
     borderColor: Theme.colors.border
     padding: 0
@@ -106,7 +113,7 @@ BaseBlock {
                         return LauncherService.resolveIcon(src);
                     }
 
-                    // 1. Specific Image (Hightest Priority)
+                    // 1. Specific Image (Highest Priority)
                     // e.g. User Avatar, Album Art
                     Image {
                         id: specificImage
@@ -118,7 +125,7 @@ BaseBlock {
                         sourceSize.width: width
                         sourceSize.height: height
                         smooth: true
-                        visible: status === Image.Ready && source.toString() !== ""
+                        visible: !root.isScreenshot && status === Image.Ready && source.toString() !== ""
                     }
 
                     // 2. App Icon (Middle Priority)
@@ -134,7 +141,7 @@ BaseBlock {
                         sourceSize.width: width
                         sourceSize.height: height
                         smooth: true
-                        visible: !specificImage.visible && status === Image.Ready && source.toString() !== ""
+                        visible: !root.isScreenshot && !specificImage.visible && status === Image.Ready && source.toString() !== ""
                     }
 
                     // 3. Material Symbol (Custom Fallback)
@@ -146,6 +153,7 @@ BaseBlock {
                         font.family: Theme.typography.iconFamily
                         text: {
                             if (!root.notification) return "";
+                            if (root.isScreenshot) return "image";
                             const ai = root.notification.appIcon || "";
                             const img = root.notification.image || "";
                             
