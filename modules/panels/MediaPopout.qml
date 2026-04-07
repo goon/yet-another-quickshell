@@ -65,42 +65,103 @@ BasePopoutWindow {
 
             // Inner Layer: Handles Image + Blur
             Item {
+                id: albumArtContainer
                 anchors.fill: parent
+
+                property bool useArt2: false
+                property string currentUrl: Media.albumArtUrl
+
+                // Handle URL changes: load the new URL into the hidden image
+                Connections {
+                    target: Media
+                    function onAlbumArtUrlChanged() {
+                        if (albumArtContainer.useArt2) {
+                            // Currently using art2, so prepare art1
+                            if (art1.source !== Media.albumArtUrl) {
+                                art1.source = Media.albumArtUrl;
+                                // Wait for Ready status in art1.onStatusChanged
+                            }
+                        } else {
+                            // Currently using art1, so prepare art2
+                            if (art2.source !== Media.albumArtUrl) {
+                                art2.source = Media.albumArtUrl;
+                                // Wait for Ready status in art2.onStatusChanged
+                            }
+                        }
+                    }
+                }
+
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     blurEnabled: true
                     blur: 0.5
                 }
 
+                // Shared breath scale property to keep images in sync
+                property real breathScale: 1.0
+                SequentialAnimation {
+                    id: breathAnim
+                    loops: Animation.Infinite
+                    running: true
+                    paused: Media.playbackState !== MprisPlaybackState.Playing
+
+                    NumberAnimation { target: albumArtContainer; property: "breathScale"; to: 1.05; duration: 8000; easing.type: Easing.InOutSine }
+                    NumberAnimation { target: albumArtContainer; property: "breathScale"; to: 1.0; duration: 8000; easing.type: Easing.InOutSine }
+                }
+
                 Image {
-                    id: albumArtImg
+                    id: art1
                     anchors.centerIn: parent
-                    width: parent.width * 1.25 // More bleed for factor 40
+                    width: parent.width * 1.25
                     height: parent.height * 1.25
-                    source: Media.albumArtUrl
+                    source: Media.albumArtUrl // Initial source
                     fillMode: Image.PreserveAspectCrop
-                    opacity: 0.45
-                    visible: status === Image.Ready
+                    opacity: !albumArtContainer.useArt2 ? 0.45 : 0.0
+                    visible: opacity > 0.01
+
+                    Behavior on opacity { BaseAnimation { speed: "slow" } }
 
                     transform: Translate {
-                        x: (root.mouseX - 0.5) * -40 // Direct factor for testing
+                        x: (root.mouseX - 0.5) * -40
                         y: (root.mouseY - 0.5) * -40
-
                         Behavior on x { BaseAnimation { duration: Theme.animations.slow } }
                         Behavior on y { BaseAnimation { duration: Theme.animations.slow } }
                     }
 
-                    property real breathScale: 1.0
-                    scale: breathScale
+                    scale: albumArtContainer.breathScale
 
-                    SequentialAnimation {
-                        id: breathAnim
-                        loops: Animation.Infinite
-                        running: parent.visible
-                        paused: Media.playbackState !== MprisPlaybackState.Playing
-                        
-                        NumberAnimation { target: albumArtImg; property: "breathScale"; to: 1.05; duration: 8000; easing.type: Easing.InOutSine }
-                        NumberAnimation { target: albumArtImg; property: "breathScale"; to: 1.0; duration: 8000; easing.type: Easing.InOutSine }
+                    onStatusChanged: {
+                        if (status === Image.Ready && albumArtContainer.useArt2) {
+                            albumArtContainer.useArt2 = false;
+                        }
+                    }
+                }
+
+                Image {
+                    id: art2
+                    anchors.centerIn: parent
+                    width: parent.width * 1.25
+                    height: parent.height * 1.25
+                    source: ""
+                    fillMode: Image.PreserveAspectCrop
+                    opacity: albumArtContainer.useArt2 ? 0.45 : 0.0
+                    visible: opacity > 0.01
+
+                    Behavior on opacity { BaseAnimation { speed: "slow" } }
+
+                    transform: Translate {
+                        x: (root.mouseX - 0.5) * -40
+                        y: (root.mouseY - 0.5) * -40
+                        Behavior on x { BaseAnimation { duration: Theme.animations.slow } }
+                        Behavior on y { BaseAnimation { duration: Theme.animations.slow } }
+                    }
+
+                    scale: albumArtContainer.breathScale
+
+                    onStatusChanged: {
+                        if (status === Image.Ready && !albumArtContainer.useArt2) {
+                            albumArtContainer.useArt2 = true;
+                        }
                     }
                 }
             }
@@ -114,25 +175,111 @@ BasePopoutWindow {
             // Song Details
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: 4
 
-                BaseText {
+                // Animated Title
+                Item {
+                    id: animatedTitle
                     Layout.fillWidth: true
-                    color: Theme.colors.primary
-                    text: Media.activePlayer ? Media.trackTitle : "No Media Playing"
-                    weight: Theme.typography.weights.bold
-                    pixelSize: Theme.typography.size.large
-                    horizontalAlignment: Text.AlignHCenter
-                    shadow: true
+                    Layout.preferredHeight: 32
+                    clip: true
+
+                    property string currentText: Media.activePlayer ? Media.trackTitle : "No Media Playing"
+                    property bool useText2: false
+
+                    onCurrentTextChanged: {
+                        if (useText2) {
+                            title1.text = currentText;
+                        } else {
+                            title2.text = currentText;
+                        }
+                        useText2 = !useText2;
+                    }
+
+                    BaseText {
+                        id: title1
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: Theme.colors.primary
+                        text: animatedTitle.currentText
+                        weight: Theme.typography.weights.bold
+                        pixelSize: Theme.typography.size.large
+                        horizontalAlignment: Text.AlignHCenter
+                        shadow: true
+                        
+                        opacity: !animatedTitle.useText2 ? 1 : 0
+                        y: !animatedTitle.useText2 ? 0 : -20
+                        Behavior on opacity { BaseAnimation { speed: "normal" } }
+                        Behavior on y { BaseAnimation { speed: "normal" } }
+                    }
+
+                    BaseText {
+                        id: title2
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: Theme.colors.primary
+                        text: ""
+                        weight: Theme.typography.weights.bold
+                        pixelSize: Theme.typography.size.large
+                        horizontalAlignment: Text.AlignHCenter
+                        shadow: true
+
+                        opacity: animatedTitle.useText2 ? 1 : 0
+                        y: animatedTitle.useText2 ? 0 : 20
+                        Behavior on opacity { BaseAnimation { speed: "normal" } }
+                        Behavior on y { BaseAnimation { speed: "normal" } }
+                    }
                 }
 
-                BaseText {
+                // Animated Artist
+                Item {
+                    id: animatedArtist
                     Layout.fillWidth: true
-                    text: Media.trackArtist
-                    pixelSize: Theme.typography.size.medium
-                    visible: Media.activePlayer !== null && text !== ""
-                    horizontalAlignment: Text.AlignHCenter
-                    shadow: true
+                    Layout.preferredHeight: 24
+                    clip: true
+                    visible: Media.activePlayer !== null && Media.trackArtist !== ""
+
+                    property string currentText: Media.trackArtist
+                    property bool useText2: false
+
+                    onCurrentTextChanged: {
+                        if (useText2) {
+                            artist1.text = currentText;
+                        } else {
+                            artist2.text = currentText;
+                        }
+                        useText2 = !useText2;
+                    }
+
+                    BaseText {
+                        id: artist1
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: animatedArtist.currentText
+                        pixelSize: Theme.typography.size.medium
+                        horizontalAlignment: Text.AlignHCenter
+                        shadow: true
+
+                        opacity: !animatedArtist.useText2 ? 1 : 0
+                        y: !animatedArtist.useText2 ? 0 : -15
+                        Behavior on opacity { BaseAnimation { speed: "normal" } }
+                        Behavior on y { BaseAnimation { speed: "normal" } }
+                    }
+
+                    BaseText {
+                        id: artist2
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: ""
+                        pixelSize: Theme.typography.size.medium
+                        horizontalAlignment: Text.AlignHCenter
+                        shadow: true
+
+                        opacity: animatedArtist.useText2 ? 1 : 0
+                        y: animatedArtist.useText2 ? 0 : 15
+                        Behavior on opacity { BaseAnimation { speed: "normal" } }
+                        Behavior on y { BaseAnimation { speed: "normal" } }
+                    }
                 }
             }
 
