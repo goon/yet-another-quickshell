@@ -167,15 +167,34 @@ BasePopoutWindow {
             }
         }
 
-        ColumnLayout {
-            width: parent.width
-            anchors.centerIn: parent
-            spacing: 24
-
             // Song Details
             ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
+                id: detailsLayout
+                width: parent.width
+                anchors.centerIn: parent
+                spacing: 24
+
+                transform: [
+                    Rotation {
+                        axis { x: 1; y: 0; z: 0 }
+                        angle: (root.mouseY - 0.5) * -30
+                        origin.x: detailsLayout.width / 2
+                        origin.y: detailsLayout.height / 2
+                        Behavior on angle { BaseAnimation { duration: Theme.animations.slow } }
+                    },
+                    Rotation {
+                        axis { x: 0; y: 1; z: 0 }
+                        angle: (root.mouseX - 0.5) * 30
+                        origin.x: detailsLayout.width / 2
+                        origin.y: detailsLayout.height / 2
+                        Behavior on angle { BaseAnimation { duration: Theme.animations.slow } }
+                    }
+                ]
+
+                // Song Detail Labels
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
 
                 // Animated Title
                 Item {
@@ -196,38 +215,44 @@ BasePopoutWindow {
                         useText2 = !useText2;
                     }
 
-                    BaseText {
-                        id: title1
-                        width: parent.width
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: Theme.colors.primary
-                        text: animatedTitle.currentText
-                        weight: Theme.typography.weights.bold
-                        pixelSize: Theme.typography.size.large
-                        horizontalAlignment: Text.AlignHCenter
-                        shadow: true
-                        
-                        opacity: !animatedTitle.useText2 ? 1 : 0
-                        y: !animatedTitle.useText2 ? 0 : -20
-                        Behavior on opacity { BaseAnimation { speed: "normal" } }
-                        Behavior on y { BaseAnimation { speed: "normal" } }
-                    }
+                    // Masked Container for Text
+                    Item {
+                        id: titleTextContainer
+                        anchors.fill: parent
 
-                    BaseText {
-                        id: title2
-                        width: parent.width
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: Theme.colors.primary
-                        text: ""
-                        weight: Theme.typography.weights.bold
-                        pixelSize: Theme.typography.size.large
-                        horizontalAlignment: Text.AlignHCenter
-                        shadow: true
+                        BaseText {
+                            id: title1
+                            width: parent.width
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: Theme.colors.primary
+                            text: animatedTitle.currentText
+                            weight: Theme.typography.weights.bold
+                            pixelSize: Theme.typography.size.large
+                            horizontalAlignment: Text.AlignHCenter
+                            shadow: true
+                            
+                            opacity: !animatedTitle.useText2 ? 1 : 0
+                            y: !animatedTitle.useText2 ? 0 : -20
+                            Behavior on opacity { BaseAnimation { speed: "normal" } }
+                            Behavior on y { BaseAnimation { speed: "normal" } }
+                        }
 
-                        opacity: animatedTitle.useText2 ? 1 : 0
-                        y: animatedTitle.useText2 ? 0 : 20
-                        Behavior on opacity { BaseAnimation { speed: "normal" } }
-                        Behavior on y { BaseAnimation { speed: "normal" } }
+                        BaseText {
+                            id: title2
+                            width: parent.width
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: Theme.colors.primary
+                            text: ""
+                            weight: Theme.typography.weights.bold
+                            pixelSize: Theme.typography.size.large
+                            horizontalAlignment: Text.AlignHCenter
+                            shadow: true
+
+                            opacity: animatedTitle.useText2 ? 1 : 0
+                            y: animatedTitle.useText2 ? 0 : 20
+                            Behavior on opacity { BaseAnimation { speed: "normal" } }
+                            Behavior on y { BaseAnimation { speed: "normal" } }
+                        }
                     }
                 }
 
