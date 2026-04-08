@@ -317,6 +317,12 @@ Item {
                     radius: root.radius
                 }
 
+                // Internal click shield to prevent closing when clicking on empty panel space
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {}
+                }
+
                 // UI Content
                 Loader {
                     id: contentLoader
