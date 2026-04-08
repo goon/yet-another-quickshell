@@ -133,9 +133,11 @@ BasePopoutWindow {
                                     spacing: Theme.geometry.spacing.medium
 
                                     BaseIcon {
-                                        icon: "speaker"
+                                        readonly property bool isActive: Volume.audioSink && Volume.audioSink.id === modelData.id
+                                        icon: isActive ? "task_alt" : "circle"
+                                        fill: isActive
                                         color: sinkButton.iconColor
-                                        size: Theme.dimensions.iconMedium
+                                        size: Theme.dimensions.iconBase
                                         Layout.alignment: Qt.AlignVCenter
                                     }
 
@@ -210,9 +212,11 @@ BasePopoutWindow {
                                     spacing: Theme.geometry.spacing.medium
 
                                     BaseIcon {
-                                        icon: "mic"
+                                        readonly property bool isActive: Volume.audioSource && Volume.audioSource.id === modelData.id
+                                        icon: isActive ? "task_alt" : "circle"
+                                        fill: isActive
                                         color: sourceButton.iconColor
-                                        size: Theme.dimensions.iconMedium
+                                        size: Theme.dimensions.iconBase
                                         Layout.alignment: Qt.AlignVCenter
                                     }
 
