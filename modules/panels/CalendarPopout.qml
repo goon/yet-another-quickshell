@@ -49,6 +49,7 @@ BasePopoutWindow {
                             iconSize: Theme.dimensions.iconBase
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
+                            clickRotate: true
                             onClicked: {
                                 gridContainer.triggerSlide(-1);
                             }
@@ -128,6 +129,7 @@ BasePopoutWindow {
                             iconSize: Theme.dimensions.iconBase
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
+                            clickRotate: true
                             onClicked: {
                                 gridContainer.triggerSlide(1);
                             }
