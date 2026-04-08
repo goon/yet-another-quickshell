@@ -32,11 +32,11 @@ Item {
         } else if (root.monitorBus !== "") {
             // Explicit bus and fast read flags
             ProcessService.run(["ddcutil", "getvcp", "10", "--bus", root.monitorBus, "--terse", "--sleep-multiplier", "0.01"], function(output) {
-                var parts = output.trim().split(" ");
-                // Terse output for getvcp 10 (brightness) is: VCP 10 C <current> M <max>
-                if (parts.length >= 5) {
-                    var current = parseInt(parts[3]);
-                    var max = parseInt(parts[4]);
+                // More robust regex parsing to handle "VCP 10 C <val> <max>" or "VCP 10 C <val> M <max>"
+                var match = output.match(/C\s+(\d+)\s+(?:M\s+)?(\d+)/);
+                if (match) {
+                    var current = parseInt(match[1]);
+                    var max = parseInt(match[2]);
                     if (max > 0)
                         root.brightness = current / max;
                 }
@@ -126,7 +126,7 @@ Item {
     Timer {
         id: initTimer
 
-        interval: 2000 // Wait 2s after startup to do heavy ddcutil scan
+        interval: 200 // Reduced from 2s to perform accurate read almost immediately on boot
         running: true
         repeat: false
         onTriggered: {
