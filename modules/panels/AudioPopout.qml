@@ -29,53 +29,97 @@ BasePopoutWindow {
             BaseBlock {
                 Layout.fillWidth: true
 
-                BaseSlider {
-                    id: outputSlider
-
+                ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    trackHeight: 38
-                    icon: Volume.volumeIcon
-                    suffix: Math.round(Volume.volume * 100)
-                    iconColor: Theme.colors.text
-                    suffixColor: Theme.colors.text
-                    iconSize: Theme.dimensions.iconMedium
-                    fontSize: Theme.typography.size.base
-                    from: 0
-                    to: 1
-                    stepSize: 0.01
-                    onValueChangedByUser: Volume.setVolume(value)
-                    onIconClicked: Volume.toggleMute()
+                    spacing: Theme.geometry.spacing.small
 
-                    Binding on value {
-                        value: Volume.volume
-                        when: !outputSlider.pressed
-                        restoreMode: Binding.RestoreBinding
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.geometry.spacing.small
+
+                        BaseIcon {
+                            icon: "volume_up"
+                            color: Theme.colors.primary
+                            size: Theme.dimensions.iconMedium
+                        }
+
+                        BaseText {
+                            text: "Output"
+                            weight: Theme.typography.weights.normal
+                            Layout.fillWidth: true
+                        }
+                    }
+
+                    BaseSlider {
+                        id: outputSlider
+
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        trackHeight: 38
+                        icon: Volume.volumeIcon
+                        suffix: Math.round(Volume.volume * 100)
+                        iconColor: Theme.colors.text
+                        suffixColor: Theme.colors.text
+                        iconSize: Theme.dimensions.iconMedium
+                        fontSize: Theme.typography.size.base
+                        from: 0
+                        to: 1
+                        stepSize: 0.01
+                        onValueChangedByUser: Volume.setVolume(value)
+                        onIconClicked: Volume.toggleMute()
+
+                        Binding on value {
+                            value: Volume.volume
+                            when: !outputSlider.pressed
+                            restoreMode: Binding.RestoreBinding
+                        }
                     }
                 }
 
-                BaseSlider {
-                    id: inputSlider
-
+                ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    trackHeight: 38
-                    icon: Volume.inputMuted ? "mic_off" : "mic"
-                    suffix: Math.round(Volume.inputVolume * 100)
-                    iconColor: Theme.colors.text
-                    suffixColor: Theme.colors.text
-                    iconSize: Theme.dimensions.iconMedium
-                    fontSize: Theme.typography.size.base
-                    from: 0
-                    to: 1
-                    stepSize: 0.01
-                    onValueChangedByUser: Volume.setInputVolume(value)
-                    onIconClicked: Volume.toggleInputMute()
+                    spacing: Theme.geometry.spacing.small
 
-                    Binding on value {
-                        value: Volume.inputVolume
-                        when: !inputSlider.pressed
-                        restoreMode: Binding.RestoreBinding
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.geometry.spacing.small
+
+                        BaseIcon {
+                            icon: "mic"
+                            color: Theme.colors.secondary
+                            size: Theme.dimensions.iconMedium
+                        }
+
+                        BaseText {
+                            text: "Input"
+                            weight: Theme.typography.weights.normal
+                            Layout.fillWidth: true
+                        }
+                    }
+
+                    BaseSlider {
+                        id: inputSlider
+
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        trackHeight: 38
+                        icon: Volume.inputMuted ? "mic_off" : "mic"
+                        suffix: Math.round(Volume.inputVolume * 100)
+                        iconColor: Theme.colors.text
+                        suffixColor: Theme.colors.text
+                        iconSize: Theme.dimensions.iconMedium
+                        fontSize: Theme.typography.size.base
+                        from: 0
+                        to: 1
+                        stepSize: 0.01
+                        onValueChangedByUser: Volume.setInputVolume(value)
+                        onIconClicked: Volume.toggleInputMute()
+
+                        Binding on value {
+                            value: Volume.inputVolume
+                            when: !inputSlider.pressed
+                            restoreMode: Binding.RestoreBinding
+                        }
                     }
                 }
             }
