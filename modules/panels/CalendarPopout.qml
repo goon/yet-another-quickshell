@@ -153,7 +153,7 @@ BasePopoutWindow {
                                     anchors.centerIn: parent
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
-                                    color: Theme.colors.muted
+                                    color: new Date().getDay() === index ? Theme.colors.primary : Theme.colors.muted
                                     text: modelData
                                 }
                             }
@@ -222,28 +222,31 @@ BasePopoutWindow {
                             Repeater {
                                 model: Calendar.calendarDays
 
-                                BaseButton {
+                                Item {
                                     id: dayButton
                                     required property var modelData
 
                                     width: (parent.width - (6 * Theme.geometry.spacing.small)) / 7
                                     implicitHeight: dayText.implicitHeight + Theme.geometry.spacing.medium
                                     height: implicitHeight
-                                    
-                                    hoverColor: modelData.isCurrentMonth ? Theme.alpha(Theme.colors.text, 0.05) : Theme.colors.transparent
-                                    activeColor: Theme.alpha(Theme.colors.text, 0.1)
-                                    
-                                    scale: pressed ? 0.95 : (containsMouse ? 1.02 : 1.0)
-                                    
+
+                                    scale: dayMouseArea.pressed ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        BaseAnimation {
+                                            speed: "fast"
+                                        }
+                                    }
+
                                     // Today/Selection Highlight (Matches LauncherItemDelegate)
                                     Item {
                                         anchors.fill: parent
                                         visible: modelData.isToday
-                                        
+
                                         // 1. Premium Selection Gradient Border
                                         Rectangle {
                                             anchors.fill: parent
-                                            radius: parent.parent.radius
+                                            radius: Theme.geometry.radius
                                             gradient: Gradient {
                                                 orientation: Gradient.Horizontal
                                                 GradientStop { position: 0; color: Theme.colors.primary }
@@ -255,15 +258,13 @@ BasePopoutWindow {
                                         Rectangle {
                                             anchors.fill: parent
                                             anchors.margins: 1.5
-                                            radius: parent.parent.radius - 1.5
+                                            radius: Theme.geometry.radius - 1.5
                                             color: Theme.colors.surface
-                                            
+
                                             Rectangle {
                                                 anchors.fill: parent
                                                 radius: parent.radius
-                                                // Combine permanent tint with mouse hover feedback
-                                                color: dayButton.containsMouse ? Qt.alpha(Theme.colors.primary, 0.12) : Qt.alpha(Theme.colors.primary, 0.08)
-                                                Behavior on color { BaseAnimation { speed: "fast" } }
+                                                color: Qt.alpha(Theme.colors.primary, 0.08)
                                             }
                                         }
 
@@ -271,7 +272,7 @@ BasePopoutWindow {
                                         Rectangle {
                                             anchors.fill: parent
                                             anchors.margins: 1
-                                            radius: parent.parent.radius - 1
+                                            radius: Theme.geometry.radius - 1
                                             gradient: Gradient {
                                                 GradientStop { position: 0.0; color: Theme.alpha(Theme.colors.text, 0.05) }
                                                 GradientStop { position: 1.0; color: Theme.colors.transparent }
@@ -279,32 +280,25 @@ BasePopoutWindow {
                                         }
                                     }
 
-                                    // Hover glass effect
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        anchors.margins: 1
-                                        radius: parent.radius - 1
-                                        gradient: Gradient {
-                                            GradientStop { position: 0.0; color: Theme.alpha(Theme.colors.text, 0.05) }
-                                            GradientStop { position: 1.0; color: Theme.colors.transparent }
-                                        }
-                                        visible: dayButton.containsMouse && !modelData.isToday
-                                    }
-
-                                    enabled: modelData.isCurrentMonth
-
                                     BaseText {
                                         id: dayText
 
                                         anchors.centerIn: parent
                                         color: {
                                             if (!modelData.isCurrentMonth) return Theme.colors.muted;
-                                            if (modelData.isToday) return Theme.colors.text; // Light text on selection
-                                            return dayButton.containsMouse ? Theme.colors.text : Theme.colors.text;
+                                            return Theme.colors.text;
                                         }
                                         pixelSize: Theme.typography.size.medium - 1
                                         weight: modelData.isToday ? Theme.typography.weights.bold : Theme.typography.weights.normal
                                         text: modelData.day < 10 ? "0" + modelData.day : modelData.day
+                                    }
+
+                                    MouseArea {
+                                        id: dayMouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: false
+                                        cursorShape: Qt.ArrowCursor
+                                        enabled: modelData.isCurrentMonth
                                     }
                                 }
                             }
