@@ -34,9 +34,18 @@ SettingsPage {
             Layout.topMargin: Theme.geometry.spacing.small
         }
 
-        BaseText {
-            text: "Location Name:"
-            pixelSize: Theme.typography.size.medium
+        ColumnLayout {
+            spacing: 0
+            BaseText {
+                text: "Location Name:"
+                pixelSize: Theme.typography.size.medium
+            }
+
+            BaseText {
+                text: "e.g. London"
+                color: Theme.colors.muted
+                pixelSize: Theme.typography.size.small
+            }
         }
 
         ColumnLayout {
@@ -129,12 +138,6 @@ SettingsPage {
                     ScrollBar.vertical: BaseScrollBar {
                     }
                 }
-            }
-            // Coordinates label
-            BaseText {
-                text: "Coordinates: " + Preferences.weatherLat + ", " + Preferences.weatherLong
-                color: Theme.colors.text
-                visible: Preferences.weatherLat && Preferences.weatherLong
             }
         }
 
