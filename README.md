@@ -37,6 +37,6 @@ ddcutil
 pciutils
 gowall
 glib2
-pywal
-python-pywal
+pywal-git
+python-pywalfox
 ```
