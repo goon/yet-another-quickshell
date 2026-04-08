@@ -37,6 +37,7 @@ Rectangle {
     property bool hoverGradient: false
     property bool hoverEnabled: true
     property bool hoverRotate: false
+    property bool clickRotate: false
     property int paddingHorizontal: text !== "" ? Theme.geometry.spacing.dynamicPadding : Theme.geometry.spacing.medium
     property int paddingVertical: Theme.geometry.spacing.medium
     property int contentAlignment: Qt.AlignCenter
@@ -168,10 +169,13 @@ Rectangle {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: (mouse) => {
-            if (mouse.button === Qt.RightButton)
+            if (mouse.button === Qt.RightButton) {
                 root.rightClicked();
-            else
+            } else {
+                if (root.clickRotate)
+                    rotateAnim.restart();
                 root.clicked();
+            }
         }
         onPressed: root.pressedSignal()
         onReleased: root.releasedSignal()
@@ -180,7 +184,7 @@ Rectangle {
     }
 
     SequentialAnimation {
-        id: hoverRotateAnim
+        id: rotateAnim
         NumberAnimation {
             target: root
             property: "rotation"
@@ -194,7 +198,7 @@ Rectangle {
 
     onContainsMouseChanged: {
         if (containsMouse && hoverRotate) {
-            hoverRotateAnim.restart();
+            rotateAnim.restart();
         }
     }
 }
