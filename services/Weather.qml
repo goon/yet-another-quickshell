@@ -36,7 +36,11 @@ QtObject {
                 if (xhr.status === 200) {
                     try {
                         var json = JSON.parse(xhr.responseText);
-                        root.searchResults = json.results || [];
+                        var results = json.results || [];
+                        root.searchResults = results.map(function(item) {
+                            item.full_name = item.name + (item.admin1 ? (", " + item.admin1) : "") + (item.country ? (", " + item.country) : "");
+                            return item;
+                        });
                     } catch (e) {
                     }
                 }
