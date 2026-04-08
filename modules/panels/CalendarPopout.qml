@@ -50,8 +50,7 @@ BasePopoutWindow {
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
                             onClicked: {
-                                gridContainer.direction = -1;
-                                Calendar.changeMonth(-1);
+                                gridContainer.triggerSlide(-1);
                             }
                         }
 
@@ -75,8 +74,8 @@ BasePopoutWindow {
                                     var targetVal = now.getFullYear() * 12 + now.getMonth();
 
                                     if (currentVal !== targetVal) {
-                                        gridContainer.direction = (targetVal > currentVal) ? 1 : -1;
-                                        Calendar.resetToCurrentMonth();
+                                        var dir = (targetVal > currentVal) ? 1 : -1;
+                                        gridContainer.triggerSlide(dir, true);
                                     }
                                 }
                             }
@@ -93,6 +92,8 @@ BasePopoutWindow {
                                 text: Calendar.monthNames[Calendar.displayMonth].toUpperCase()
                                 z: 1
                                 opacity: 1.0
+
+                                transform: Translate { id: monthTranslate }
                             }
 
                             BaseText {
@@ -112,6 +113,8 @@ BasePopoutWindow {
                                 shadow: true
                                 shadowColor: Theme.colors.surface
                                 shadowRadius: 10
+
+                                transform: Translate { id: yearTranslate }
                             }
                         }
 
@@ -126,8 +129,7 @@ BasePopoutWindow {
                             hoverColor: Theme.colors.surface
                             scale: pressed ? 0.92 : (containsMouse ? 1.05 : 1.0)
                             onClicked: {
-                                gridContainer.direction = 1;
-                                Calendar.changeMonth(1);
+                                gridContainer.triggerSlide(1);
                             }
                         }
                     }
@@ -166,47 +168,74 @@ BasePopoutWindow {
                         implicitHeight: grid.height
                         clip: true
 
-                        property int direction: 0
-
-                        onDirectionChanged: {
-                            if (direction !== 0) {
-                                slideAnim.restart();
-                                direction = 0;
-                            }
+                        property int _animDirection: 0
+                        property bool _isResetting: false
+                        
+                        function triggerSlide(dir, reset) {
+                            _animDirection = dir;
+                            _isResetting = !!reset;
+                            slideAnim.restart();
                         }
 
                         SequentialAnimation {
                             id: slideAnim
                             ParallelAnimation {
                                 BaseAnimation {
-                                    targets: [grid, monthLabel, yearLabel]
+                                    targets: [gridTranslate]
                                     property: "x"
                                     from: 0
-                                    to: -gridContainer.direction * 20
+                                    to: -gridContainer._animDirection * 30
                                     speed: "fast"
                                     easing.type: Easing.OutCubic
                                 }
                                 BaseAnimation {
                                     targets: [grid, monthLabel, yearLabel]
                                     property: "opacity"
-                                    from: monthLabel.opacity
                                     to: 0
                                     speed: "fast"
                                 }
+                                BaseAnimation {
+                                    targets: [monthLabel, yearLabel]
+                                    property: "scale"
+                                    to: 0.7
+                                    speed: "fast"
+                                }
                             }
-                            PropertyAction { targets: [grid, monthLabel, yearLabel]; property: "x"; value: gridContainer.direction * 20 }
+
+                            ScriptAction { 
+                                script: {
+                                    if (gridContainer._isResetting) 
+                                        Calendar.resetToCurrentMonth();
+                                    else 
+                                        Calendar.changeMonth(gridContainer._animDirection);
+                                }
+                            }
+                            PropertyAction { targets: [gridTranslate]; property: "x"; value: gridContainer._animDirection * 30 }
+                            
                             ParallelAnimation {
                                 BaseAnimation {
-                                    targets: [grid, monthLabel, yearLabel]
+                                    targets: [gridTranslate]
                                     to: 0
                                     property: "x"
                                     speed: "fast"
                                     easing.type: Easing.OutBack
                                 }
                                 BaseAnimation {
-                                    targets: [grid, monthLabel, yearLabel]
+                                    targets: [grid, monthLabel]
                                     property: "opacity"
                                     to: 1
+                                    speed: "fast"
+                                }
+                                BaseAnimation {
+                                    target: yearLabel
+                                    property: "opacity"
+                                    to: 0.85
+                                    speed: "fast"
+                                }
+                                BaseAnimation {
+                                    targets: [monthLabel, yearLabel]
+                                    property: "scale"
+                                    to: 1.0
                                     speed: "fast"
                                 }
                             }
@@ -218,6 +247,8 @@ BasePopoutWindow {
                             width: parent.width
                             columns: 7
                             spacing: Theme.geometry.spacing.small
+                            
+                            transform: Translate { id: gridTranslate }
 
                             Repeater {
                                 model: Calendar.calendarDays
