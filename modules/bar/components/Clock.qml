@@ -8,8 +8,10 @@ BaseBlock {
     
     Layout.alignment: Qt.AlignVCenter
     Layout.fillWidth: false
-    paddingVertical: 0
+    // Explicitly bind width for stable hover and layout in the bar
+    implicitWidth: layout.implicitWidth + (paddingHorizontal * 2)
     implicitHeight: Theme.dimensions.barItemHeight
+    paddingVertical: 0
     hoverEnabled: false
     clickable: true
     
@@ -22,7 +24,6 @@ BaseBlock {
     popoutOnHover: true
     onHoverAction: PopoutService.openCalendarPopout
 
-    // Now supported natively by BaseBlock
     onMiddleClicked: {
         Weather.fetchWeather();
     }
@@ -32,37 +33,44 @@ BaseBlock {
         precision: SystemClock.Minutes
     }
 
-    // Unified content layout - providing implicit size to BaseBlock correctly
-    RowLayout {
-        id: layout
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-        spacing: Theme.geometry.spacing.medium
+    // Centering wrapper to ensure proper alignment and hover area
+    Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        implicitWidth: layout.implicitWidth
+        implicitHeight: layout.implicitHeight
 
-        // Time with bold hour
-        BaseText {
-            text: "<b>" + Qt.formatDateTime(systemClock.date, "hh") + "</b>" + " " + Qt.formatDateTime(systemClock.date, "mm")
-            textFormat: Text.RichText
-            pixelSize: Theme.typography.size.medium
-            weight: Theme.typography.weights.normal
-            color: root.containsMouse ? Theme.colors.primary : Theme.colors.text
-        }
+        RowLayout {
+            id: layout
+            anchors.centerIn: parent
+            spacing: Theme.geometry.spacing.medium
 
-        BaseSeparator {
-            orientation: BaseSeparator.Vertical
-            fill: false
-            thickness: 1
-            Layout.preferredHeight: Theme.dimensions.iconSmall
-            Layout.preferredWidth: 1
-            opacity: 0.3
-            color: Theme.colors.text
-        }
+            // Time with bold hour
+            BaseText {
+                text: "<b>" + Qt.formatDateTime(systemClock.date, "hh") + "</b>" + " " + Qt.formatDateTime(systemClock.date, "mm")
+                textFormat: Text.RichText
+                pixelSize: Theme.typography.size.medium
+                weight: Theme.typography.weights.normal
+                color: root.containsMouse ? Theme.colors.primary : Theme.colors.text
+            }
 
-        // Temperature
-        BaseText {
-            text: Weather.temperature
-            pixelSize: Theme.typography.size.medium
-            weight: Theme.typography.weights.normal
-            color: root.containsMouse ? Theme.colors.primary : Theme.colors.text
+            BaseSeparator {
+                orientation: BaseSeparator.Vertical
+                fill: false
+                thickness: 1
+                Layout.preferredHeight: Theme.dimensions.iconSmall
+                Layout.preferredWidth: 1
+                opacity: 0.3
+                color: Theme.colors.text
+            }
+
+            // Temperature
+            BaseText {
+                text: Weather.temperature
+                pixelSize: Theme.typography.size.medium
+                weight: Theme.typography.weights.normal
+                color: root.containsMouse ? Theme.colors.primary : Theme.colors.text
+            }
         }
     }
 }
