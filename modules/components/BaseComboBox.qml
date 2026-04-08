@@ -18,6 +18,7 @@ ComboBox {
 
     // Search and Preview
     property bool searchable: false
+    property bool filterLocally: true
     property bool previewFonts: false
     property string searchText: ""
 
@@ -35,7 +36,7 @@ ComboBox {
     font.pixelSize: currentFontPixelSize
     font.weight: currentFontWeight
     
-    enabled: count > 0
+    enabled: count > 0 || searchable
     opacity: enabled ? 1.0 : 0.5
 
     // Delegate (Dropdown items)
@@ -46,7 +47,7 @@ ComboBox {
 
         property bool isItemVisible: {
             // FIX: Removed the index === root.currentIndex check which was hiding the active item!
-            if (!root.searchable || root.searchText === "") return true;
+            if (!root.searchable || !root.filterLocally || root.searchText === "") return true;
             let t = (root.textRole && typeof modelData === "object") ? modelData[root.textRole] : modelData;
             return (t || "").toLowerCase().includes(root.searchText.toLowerCase());
         }
@@ -129,7 +130,7 @@ ComboBox {
         icon: "expand_more"
         color: root.textColor
         size: Theme.dimensions.iconMedium
-        visible: root.count > 0 && !comboPopup.visible
+        visible: (root.count > 0 || root.searchable) && !comboPopup.visible
         opacity: visible ? 1.0 : 0.0
     }
 
