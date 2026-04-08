@@ -196,117 +196,83 @@ BasePopoutWindow {
                     Layout.fillWidth: true
                     spacing: 4
 
-                // Animated Title
-                Item {
-                    id: animatedTitle
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 32
-                    clip: true
-
-                    property string currentText: Media.activePlayer ? Media.trackTitle : "No Media Playing"
-                    property bool useText2: false
-
-                    onCurrentTextChanged: {
-                        if (useText2) {
-                            title1.text = currentText;
-                        } else {
-                            title2.text = currentText;
-                        }
-                        useText2 = !useText2;
-                    }
-
-                    // Masked Container for Text
+                    // Animated Title
                     Item {
-                        id: titleTextContainer
-                        anchors.fill: parent
+                        id: animatedTitle
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32
+                        
+                        property string displayTitle: Media.activePlayer ? Media.trackTitle : "No Media Playing"
 
                         BaseText {
-                            id: title1
+                            id: titleLabel
                             width: parent.width
-                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.centerIn: parent
                             color: Theme.colors.primary
-                            text: animatedTitle.currentText
+                            text: animatedTitle.displayTitle
                             weight: Theme.typography.weights.bold
                             pixelSize: Theme.typography.size.large
                             horizontalAlignment: Text.AlignHCenter
                             shadow: true
-                            
-                            opacity: !animatedTitle.useText2 ? 1 : 0
-                            y: !animatedTitle.useText2 ? 0 : -20
-                            Behavior on opacity { BaseAnimation { speed: "normal" } }
-                            Behavior on y { BaseAnimation { speed: "normal" } }
                         }
+
+                        SequentialAnimation {
+                            id: titleAnim
+                            ParallelAnimation {
+                                BaseAnimation { target: titleLabel; property: "scale"; to: 0.7; speed: "fast" }
+                                BaseAnimation { target: titleLabel; property: "opacity"; to: 0; speed: "fast" }
+                            }
+                            ScriptAction { script: animatedTitle.displayTitle = (Media.activePlayer ? Media.trackTitle : "No Media Playing") }
+                            ParallelAnimation {
+                                BaseAnimation { target: titleLabel; property: "scale"; to: 1.0; speed: "fast" }
+                                BaseAnimation { target: titleLabel; property: "opacity"; to: 1.0; speed: "fast" }
+                            }
+                        }
+                    }
+
+                    // Animated Artist
+                    Item {
+                        id: animatedArtist
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 24
+                        visible: Media.activePlayer !== null && Media.trackArtist !== ""
+
+                        property string displayArtist: Media.trackArtist
 
                         BaseText {
-                            id: title2
+                            id: artistLabel
                             width: parent.width
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            color: Theme.colors.primary
-                            text: ""
-                            weight: Theme.typography.weights.bold
-                            pixelSize: Theme.typography.size.large
+                            anchors.centerIn: parent
+                            text: animatedArtist.displayArtist
+                            pixelSize: Theme.typography.size.medium
                             horizontalAlignment: Text.AlignHCenter
                             shadow: true
+                        }
 
-                            opacity: animatedTitle.useText2 ? 1 : 0
-                            y: animatedTitle.useText2 ? 0 : 20
-                            Behavior on opacity { BaseAnimation { speed: "normal" } }
-                            Behavior on y { BaseAnimation { speed: "normal" } }
+                        SequentialAnimation {
+                            id: artistAnim
+                            ParallelAnimation {
+                                BaseAnimation { target: artistLabel; property: "scale"; to: 0.7; speed: "fast" }
+                                BaseAnimation { target: artistLabel; property: "opacity"; to: 0; speed: "fast" }
+                            }
+                            ScriptAction { script: animatedArtist.displayArtist = Media.trackArtist }
+                            ParallelAnimation {
+                                BaseAnimation { target: artistLabel; property: "scale"; to: 1.0; speed: "fast" }
+                                BaseAnimation { target: artistLabel; property: "opacity"; to: 1.0; speed: "fast" }
+                            }
+                        }
+                    }
+
+                    Connections {
+                        target: Media
+                        function onTrackTitleChanged() { titleAnim.restart(); }
+                        function onTrackArtistChanged() { artistAnim.restart(); }
+                        function onActivePlayerChanged() { 
+                            titleAnim.restart();
+                            artistAnim.restart();
                         }
                     }
                 }
-
-                // Animated Artist
-                Item {
-                    id: animatedArtist
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 24
-                    clip: true
-                    visible: Media.activePlayer !== null && Media.trackArtist !== ""
-
-                    property string currentText: Media.trackArtist
-                    property bool useText2: false
-
-                    onCurrentTextChanged: {
-                        if (useText2) {
-                            artist1.text = currentText;
-                        } else {
-                            artist2.text = currentText;
-                        }
-                        useText2 = !useText2;
-                    }
-
-                    BaseText {
-                        id: artist1
-                        width: parent.width
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: animatedArtist.currentText
-                        pixelSize: Theme.typography.size.medium
-                        horizontalAlignment: Text.AlignHCenter
-                        shadow: true
-
-                        opacity: !animatedArtist.useText2 ? 1 : 0
-                        y: !animatedArtist.useText2 ? 0 : -15
-                        Behavior on opacity { BaseAnimation { speed: "normal" } }
-                        Behavior on y { BaseAnimation { speed: "normal" } }
-                    }
-
-                    BaseText {
-                        id: artist2
-                        width: parent.width
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: ""
-                        pixelSize: Theme.typography.size.medium
-                        horizontalAlignment: Text.AlignHCenter
-                        shadow: true
-
-                        opacity: animatedArtist.useText2 ? 1 : 0
-                        y: animatedArtist.useText2 ? 0 : 15
-                        Behavior on opacity { BaseAnimation { speed: "normal" } }
-                        Behavior on y { BaseAnimation { speed: "normal" } }
-                    }
-                }
-            }
 
             // Progress
             Slider {
