@@ -48,95 +48,25 @@ SettingsPage {
             }
         }
 
-        ColumnLayout {
+        BaseComboBox {
+            id: locationSelector
             Layout.fillWidth: true
-            spacing: 0
-
-            BaseInput {
-                id: locationInput
-                Layout.fillWidth: true
-                implicitHeight: 42
-                inputPadding: 10
-                text: Preferences.weatherLocationName
-                placeholderText: "Search location... (e.g. London)"
-                onTextChanged: {
-                    if (activeFocus)
-                        searchTimer.restart();
-                }
-                onEditingFinished: {
-                    Preferences.weatherLocationName = text;
-                }
+            model: Weather.searchResults
+            textRole: "full_name"
+            searchable: true
+            filterLocally: false
+            displayText: Preferences.weatherLocationName || "Search location..."
+            
+            onSearchTextChanged: {
+                Weather.searchLocation(searchText);
             }
 
-            Timer {
-                id: searchTimer
-                interval: 500
-                repeat: false
-                onTriggered: Weather.searchLocation(locationInput.text)
-            }
-
-            // Search Results List
-            Popup {
-                id: resultsList
-                y: locationInput.height + 2
-                width: locationInput.width
-                padding: 1
-                visible: Weather.searchResults && Weather.searchResults.length > 0 && locationInput.activeFocus
-                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-                
-                property var input: locationInput
-                property int maxVisibleItems: 10
-
-                background: Rectangle {
-                    color: Theme.colors.background
-                    radius: Theme.geometry.radius
-                    border.width: 0
-                }
-
-                contentItem: ListView {
-                    id: resultsListView
-                    implicitHeight: Math.min(contentHeight, 36 * resultsList.maxVisibleItems)
-                    clip: true
-                    model: Weather.searchResults
-                    
-                    delegate: ItemDelegate {
-                        id: delegateRoot
-                        width: resultsListView.width
-                        height: 36
-                        
-                        property string fullName: modelData.name + (modelData.admin1 ? (", " + modelData.admin1) : "") + (modelData.country ? (", " + modelData.country) : "")
-
-                        contentItem: Text {
-                            text: delegateRoot.fullName
-                            color: Theme.colors.text
-                            font.family: Theme.typography.family
-                            font.pixelSize: Theme.typography.size.base
-                            elide: Text.ElideRight
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: Theme.geometry.spacing.dynamicPadding
-                            rightPadding: Theme.geometry.spacing.dynamicPadding
-                        }
-
-                        background: Rectangle {
-                            color: parent.highlighted || parent.hovered ? Theme.colors.text : Theme.colors.transparent
-                            radius: Math.max(2, Theme.geometry.radius * 0.5)
-                            anchors.fill: parent
-                            anchors.margins: 2
-                        }
-
-                        onClicked: {
-                            Preferences.weatherLat = modelData.latitude.toString();
-                            Preferences.weatherLong = modelData.longitude.toString();
-                            Preferences.weatherLocationName = fullName;
-                            locationInput.text = fullName;
-                            Weather.searchResults = []; // Clear results
-                            locationInput.focus = false;
-                            resultsList.close();
-                        }
-                    }
-
-                    ScrollBar.vertical: BaseScrollBar {
-                    }
+            onActivated: (index) => {
+                var item = Weather.searchResults[index];
+                if (item) {
+                    Preferences.weatherLat = item.latitude.toString();
+                    Preferences.weatherLong = item.longitude.toString();
+                    Preferences.weatherLocationName = item.full_name;
                 }
             }
         }
