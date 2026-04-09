@@ -34,7 +34,8 @@ BaseBlock {
         // Internal MouseArea for Wheel and Middle Click (BaseBlock only handles Left/Right)
         MouseArea {
             anchors.fill: parent
-            acceptedButtons: Qt.MiddleButton
+            acceptedButtons: Qt.MiddleButton | Qt.RightButton
+            cursorShape: Qt.PointingHandCursor
             onClicked: (mouse) => {
                 if (mouse.button === Qt.MiddleButton)
                     Volume.toggleMute();

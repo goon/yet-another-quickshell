@@ -249,6 +249,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton | Qt.RightButton
+        cursorShape: Qt.PointingHandCursor
         onClicked: (mouse) => {
             if (mouse.button === Qt.MiddleButton || mouse.button === Qt.RightButton) {
                 Media.togglePlayPause()

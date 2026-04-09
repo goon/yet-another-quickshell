@@ -66,6 +66,7 @@ BaseBlock {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
                 onClicked: (mouse) => {
                     // Formal parameter to avoid deprecation warning
                     if (!trayData)

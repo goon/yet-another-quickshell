@@ -16,8 +16,24 @@ Text {
     property color hoverColor: Theme.colors.muted
     // Hover support
     property bool hoverEnabled: false
-    readonly property alias containsMouse: mouseArea.containsMouse
-    property alias mouseArea: mouseArea
+    Loader {
+        id: mouseAreaLoader
+        anchors.fill: parent
+        active: root.hoverEnabled
+        sourceComponent: Component {
+            MouseArea {
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                onClicked: (mouse) => root.clicked()
+                onPressed: root.pressedSignal()
+                onReleased: root.released()
+            }
+        }
+    }
+
+    readonly property bool containsMouse: mouseAreaLoader.item ? mouseAreaLoader.item.containsMouse : false
+    readonly property Item mouseArea: mouseAreaLoader.item
     // Shadow support
     property bool shadow: false
     property color shadowColor: Theme.effects.shadow.color
@@ -31,27 +47,12 @@ Text {
     signal pressedSignal()
     signal released()
 
-    color: (hoverEnabled && mouseArea.containsMouse) ? hoverColor : normalColor
+    color: (hoverEnabled && root.containsMouse) ? hoverColor : normalColor
     family: Theme.typography.family
     pixelSize: Theme.typography.size.base
     font.weight: root.weight
     wrapMode: Text.WordWrap
     layer.enabled: shadow
-
-    MouseArea {
-        id: mouseArea
-
-        anchors.fill: parent
-        enabled: root.hoverEnabled
-        hoverEnabled: root.hoverEnabled
-        cursorShape: root.hoverEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-        onClicked: (mouse) => {
-            return root.clicked();
-        }
-        onPressed: root.pressedSignal()
-        onReleased: root.released()
-    }
 
     Behavior on color {
         BaseAnimation {
