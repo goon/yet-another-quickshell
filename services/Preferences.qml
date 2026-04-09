@@ -13,7 +13,6 @@ QtObject {
     property string weatherLat: "51.50853"
     property string weatherLong: "-0.12574"
     property string weatherLocationName: "London, England, United Kingdom"
-    property bool weatherShowLocation: true
     property string weatherUnit: "celsius" // "celsius" or "fahrenheit"
     property bool gowallEnabled: false // Global Toggle
     property bool blurEnabled: false
@@ -82,7 +81,6 @@ QtObject {
             "weatherLat": root.weatherLat,
             "weatherLong": root.weatherLong,
             "weatherLocationName": root.weatherLocationName,
-            "weatherShowLocation": root.weatherShowLocation,
             "weatherUnit": root.weatherUnit,
             "gowallEnabled": root.gowallEnabled,
             "blurEnabled": root.blurEnabled,
@@ -215,7 +213,6 @@ QtObject {
     onWeatherLatChanged: requestSave("weatherLat")
     onWeatherLongChanged: requestSave("weatherLong")
     onWeatherLocationNameChanged: requestSave("weatherLocationName")
-    onWeatherShowLocationChanged: requestSave("weatherShowLocation")
     onWeatherUnitChanged: requestSave("weatherUnit")
     onGowallEnabledChanged: requestSave("gowallEnabled")
     onBlurEnabledChanged: requestSave("blurEnabled")
@@ -299,9 +296,6 @@ QtObject {
                     if (data.hasOwnProperty("weatherLocationName"))
                         root.weatherLocationName = data.weatherLocationName;
 
-                    if (data.hasOwnProperty("weatherShowLocation"))
-                        root.weatherShowLocation = data.weatherShowLocation;
-                    
                     if (data.hasOwnProperty("weatherUnit"))
                         root.weatherUnit = data.weatherUnit;
 
