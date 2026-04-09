@@ -61,7 +61,7 @@ Item {
             var popup = activePopups[i];
             popup.stackIndex = i;
             popup.offset = currentOffset;
-            currentOffset += popup.implicitHeight + Theme.geometry.barPanelGap;
+            currentOffset += (popup.implicitHeight - (popup.shadowPadding * 2)) + Theme.geometry.notificationStackGap;
         }
     }
 

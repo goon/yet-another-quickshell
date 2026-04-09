@@ -11,10 +11,9 @@ BaseBlock {
     property var notification: null
     property real progress: 0
     property bool showCloseButton: true
+    property bool showTime: true
     property var time: new Date()
     property string timeString: "now"
-    property int density: Preferences.notificationDensity
-    readonly property bool compactMode: density === 0
 
     signal closeClicked()
 
@@ -45,7 +44,7 @@ BaseBlock {
 
     // Inner Content Block
     Rectangle {
-        property real innerPadding: root.compactMode ? Theme.geometry.spacing.small : Theme.geometry.spacing.dynamicPadding
+        property real innerPadding: Theme.geometry.spacing.dynamicPadding
 
         Layout.fillWidth: true
 
@@ -58,55 +57,21 @@ BaseBlock {
 
             anchors.fill: parent
             anchors.margins: parent.innerPadding
-            spacing: root.compactMode ? Theme.geometry.spacing.small : Theme.geometry.spacing.medium
+            spacing: Theme.geometry.spacing.medium
 
-
-            // Progress Bar (inset)
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 4
-                color: Theme.colors.transparent
-                visible: root.progress > 0
-                clip: true
-                radius: Theme.geometry.radius * 0.2
-
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    width: parent.width * root.progress
-                    color: {
-                        if (!root.notification)
-                            return Theme.colors.primary;
-
-                        const text = (root.notification.summary + " " + root.notification.appName).toLowerCase();
-                        if (text.includes("error") || text.includes("fail") || text.includes("alert"))
-                            return Theme.colors.error;
-
-                        if (text.includes("warn") || text.includes("low") || text.includes("weak"))
-                            return Theme.colors.warning;
-
-                        if (text.includes("success") || text.includes("complete") || text.includes("update"))
-                            return Theme.colors.success;
-
-                        return Theme.colors.primary;
-                    }
-                }
-
-            }
 
             // Top section: Icon, Info, Close
             RowLayout {
                 Layout.fillWidth: true
-                spacing: root.compactMode ? Theme.geometry.spacing.small : Theme.geometry.spacing.large
+                spacing: Theme.geometry.spacing.large
                 Layout.alignment: Qt.AlignTop
 
 
                 // App icon
                 Rectangle {
-                    Layout.preferredWidth: root.compactMode ? 24 : headerCol.height
+                    Layout.preferredWidth: Theme.dimensions.iconLarge
                     Layout.preferredHeight: Layout.preferredWidth
-                    Layout.alignment: root.compactMode ? Qt.AlignVCenter : Qt.AlignTop
+                    Layout.alignment: Qt.AlignTop
 
                     color: Theme.colors.transparent
                     radius: 0
@@ -120,7 +85,7 @@ BaseBlock {
                     Image {
                         id: specificImage
                         anchors.centerIn: parent
-                        width: Math.min(root.compactMode ? 20 : Theme.dimensions.iconLarge, parent.width - 4)
+                        width: Math.min(Theme.dimensions.iconLarge, parent.width - 4)
                         height: width
 
                         source: parent.resolveSource(root.notification ? root.notification.image : "")
@@ -136,7 +101,7 @@ BaseBlock {
                     Image {
                         id: appIconImage
                         anchors.centerIn: parent
-                        width: Math.min(root.compactMode ? 20 : Theme.dimensions.iconLarge, parent.width - 4)
+                        width: Math.min(Theme.dimensions.iconLarge, parent.width - 4)
                         height: width
 
                         source: parent.resolveSource(root.notification ? root.notification.appIcon : "")
@@ -151,7 +116,7 @@ BaseBlock {
                     Text {
                         id: symbolIcon
                         anchors.centerIn: parent
-                        font.pixelSize: root.compactMode ? 16 : Theme.dimensions.iconMedium
+                        font.pixelSize: Theme.dimensions.iconMedium
                         font.family: Theme.typography.iconFamily
                         text: {
                             if (!root.notification) return "";
@@ -183,46 +148,57 @@ BaseBlock {
                         anchors.centerIn: parent
                         visible: !specificImage.visible && !appIconImage.visible && !symbolIcon.visible
                         icon: "notifications_unread"
-                        size: root.compactMode ? 16 : Theme.dimensions.iconMedium
+                        size: Theme.dimensions.iconMedium
                         width: size
                         height: size
                         color: Theme.colors.primary
                     }
                 }
 
-                // Header info: App name and Summary
-                ColumnLayout {
-                    id: headerCol
+                // Header info: Summary (Title) | App Name (Single Line)
+                RowLayout {
+                    id: headerRow
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
-                    spacing: 0
+                    spacing: Theme.geometry.spacing.small
 
-                    // App name
+                    // Summary (Title)
                     BaseText {
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 100 // Hint to help Layout
+                        id: summaryText
+                        Layout.fillWidth: false
                         color: Theme.colors.text
-                        visible: !root.compactMode
-                        text: (root.notification ? (root.notification.appName || "Notification").toUpperCase() : "") + " • " + root.timeString.toUpperCase()
-                        elide: Text.ElideRight
-                        pixelSize: Theme.typography.size.small
-                    }
-
-
-                    // Summary
-                    BaseText {
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 200 // Hint to help Layout
-                        color: Theme.colors.text
-                        pixelSize: root.compactMode ? Theme.typography.size.medium : Theme.typography.size.large
+                        pixelSize: Theme.typography.size.medium
                         weight: Theme.typography.weights.bold
                         text: root.notification ? (root.notification.summary || "") : ""
-                        wrapMode: Text.Wrap
-                        maximumLineCount: root.compactMode ? 1 : 2
+                        maximumLineCount: 1
+                        elide: Text.ElideRight
+                        // Allow the summary to shrink but avoid circular dependency on parent.width
+                        Layout.maximumWidth: root.width - 120
+                    }
+
+                    // Separator
+                    BaseText {
+                        id: separator
+                        text: "|"
+                        color: Theme.colors.muted
+                        visible: root.showTime
+                        pixelSize: Theme.typography.size.base
+                    }
+
+                    // Time
+                    BaseText {
+                        id: timeText
+                        color: Theme.colors.muted
+                        visible: root.showTime
+                        text: root.timeString.toUpperCase()
+                        pixelSize: Theme.typography.size.small
                         elide: Text.ElideRight
                     }
 
-
+                    // Spacer to push everything to the left
+                    Item {
+                        Layout.fillWidth: true
+                    }
                 }
 
                 // Close button
@@ -250,7 +226,7 @@ BaseBlock {
                 wrapMode: Text.Wrap
                 maximumLineCount: 8
                 elide: Text.ElideRight
-                visible: text !== "" && !root.compactMode
+                visible: text !== ""
             }
 
 

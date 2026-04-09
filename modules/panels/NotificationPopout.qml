@@ -31,6 +31,8 @@ BasePopoutWindow {
             property var notificationManager: root.notificationManager
             property int notifCount: notificationManager ? notificationManager.notificationHistory.count : 0
 
+            onNotificationManagerChanged: updateGroupedModel()
+
             function updateGroupedModel() {
                 if (!notificationManager) {
                     root.groupedModel = [];
@@ -183,7 +185,6 @@ BasePopoutWindow {
                                 padding: 0
                                 showCloseButton: true
                                 progress: 0
-                                density: 1
                                 backgroundColor: Theme.alpha(Theme.colors.background, Theme.blur.surfaceOpacity)
                                 onClicked: {
                                     if (!isStack) return;
@@ -228,7 +229,6 @@ BasePopoutWindow {
                                     borderEnabled: false
                                     padding: 0
                                     showCloseButton: true
-                                    density: 1
                                     backgroundColor: Theme.alpha(Theme.colors.base, Theme.blur.surfaceOpacity)
                                     onCloseClicked: {
                                         if (modelData.modelData)

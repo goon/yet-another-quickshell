@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
@@ -17,6 +18,8 @@ PanelWindow {
     property var activeNotification: null
     property bool active: false
 
+    property real shadowPadding: 24
+
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.exclusiveZone: -1
@@ -24,9 +27,20 @@ PanelWindow {
     // Window must be visible for animations to play
     visible: activeNotification !== null
     color: Theme.colors.transparent
-    implicitWidth: Theme.dimensions.toastWidth
-    implicitHeight: card.implicitHeight
+    implicitWidth: Theme.dimensions.toastWidth + (shadowPadding * 2)
+    implicitHeight: card.implicitHeight + (shadowPadding * 2)
     screen: Quickshell.screens[0]
+
+    Item {
+        id: dummyItem
+        width: 1; height: 1
+        opacity: 0
+    }
+
+    BackgroundEffect.blurRegion: Region {
+        item: (Preferences.blurEnabled && popup.active) ? card : dummyItem
+        radius: Theme.geometry.radius
+    }
 
     anchors {
         top: true
@@ -36,8 +50,8 @@ PanelWindow {
     }
 
     margins {
-        top: Config.notificationToastStackMarginTop + offset
-        right: Config.notificationToastMarginRight
+        top: (Config.notificationToastStackMarginTop + offset) - shadowPadding
+        right: Config.notificationToastMarginRight - shadowPadding
     }
 
     // Logic to handle incoming and outgoing notifications
@@ -68,10 +82,14 @@ PanelWindow {
     NotificationCard {
         id: card
 
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: Theme.dimensions.toastWidth
+        height: implicitHeight
+
         notification: popup.activeNotification
         progress: popup.lifetime
         showCloseButton: false
+        showTime: false
         clickable: true
         borderWidth: 0
         onClicked: popup.active = false
@@ -79,6 +97,16 @@ PanelWindow {
         // Animations on the card content
         opacity: popup.active ? 1 : 0
         scale: popup.active ? 1 : 0.8
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowOpacity: 0.4
+            shadowBlur: 1.0
+            shadowVerticalOffset: 3
+            shadowHorizontalOffset: 0
+            shadowColor: "black"
+        }
 
         Behavior on opacity {
             BaseAnimation {
