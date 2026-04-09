@@ -34,6 +34,8 @@ BaseBlock {
 
     borderWidth: 1
     borderColor: Theme.colors.border
+    premiumHover: true
+    clickable: true
     padding: 0
     onTimeChanged: root.updateTime()
 
@@ -48,7 +50,7 @@ BaseBlock {
         Layout.fillWidth: true
 
         Layout.preferredHeight: notifContent.implicitHeight + (innerPadding * 2)
-        color: Theme.alpha(Theme.colors.surface, Theme.blur.surfaceOpacity)
+        color: Theme.colors.transparent
         radius: Theme.geometry.radius
 
         ColumnLayout {
@@ -229,7 +231,7 @@ BaseBlock {
                     Layout.preferredHeight: Theme.dimensions.iconMedium
                     Layout.alignment: Qt.AlignTop
                     visible: root.showCloseButton
-                    icon: "close"
+                    icon: "clear_all"
                     iconColor: containsMouse ? Theme.colors.surface : Theme.colors.error
                     hoverColor: Theme.colors.error
                     size: Theme.typography.size.large

@@ -71,8 +71,9 @@ PanelWindow {
         anchors.fill: parent
         notification: popup.activeNotification
         progress: popup.lifetime
-        showCloseButton: true
+        showCloseButton: false
         clickable: true
+        borderWidth: 0
         onClicked: popup.active = false
 
         // Animations on the card content
