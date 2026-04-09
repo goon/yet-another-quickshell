@@ -84,7 +84,7 @@ BasePopoutWindow {
                     }
 
                     BaseButton {
-                        icon: "delete_sweep"
+                        icon: "clear_all"
                         size: Theme.dimensions.iconMedium
                         hoverColor: Theme.alpha(Theme.colors.error, 0.1)
                         onClicked: {
