@@ -75,8 +75,8 @@ Item {
     }
 
     IpcHandler {
-        function toggle() { PopoutService.toggleCalendarPopout(); }
-        target: "calendar"
+        function toggle() { PopoutService.toggleForecast(); }
+        target: "forecast"
     }
 
     IpcHandler {

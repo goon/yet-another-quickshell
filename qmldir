@@ -108,7 +108,9 @@ MediaPopout modules/panels/MediaPopout.qml
 NotificationPopout modules/panels/NotificationPopout.qml
 SystemPopout modules/panels/SystemPopout.qml
 AudioPopout modules/panels/AudioPopout.qml
-CalendarPopout modules/panels/CalendarPopout.qml
+Forecast modules/panels/forecast/Forecast.qml
+CalendarForecast modules/panels/forecast/CalendarForecast.qml
+WeatherForecast modules/panels/forecast/WeatherForecast.qml
 TrayPopout modules/panels/TrayPopout.qml
 NetworkContent modules/panels/system/NetworkContent.qml
 BluetoothContent modules/panels/system/BluetoothContent.qml

@@ -20,7 +20,7 @@ ShellRoot {
         PopoutService.notificationManager = Notifications;
         PopoutService.systemPopoutLoader = systemPopoutLoader;
         PopoutService.audioPopoutLoader = audioPopoutLoader;
-        PopoutService.calendarPopoutLoader = calendarPopoutLoader;
+        PopoutService.forecastLoader = forecastLoader;
         PopoutService.systemControlPopoutLoader = systemControlPopoutLoader;
         PopoutService.fileDialogLoader = fileDialogLoader;
     }
@@ -73,8 +73,8 @@ ShellRoot {
     }
 
     BaseLazyLoader {
-        id: calendarPopoutLoader
-        source: Qt.resolvedUrl("modules/panels/CalendarPopout.qml")
+        id: forecastLoader
+        source: Qt.resolvedUrl("modules/panels/forecast/Forecast.qml")
     }
 
     BaseLazyLoader {

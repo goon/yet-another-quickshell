@@ -12,7 +12,7 @@ QtObject {
     property var mediaPopoutLoader: null
     property var systemPopoutLoader: null
     property var audioPopoutLoader: null
-    property var calendarPopoutLoader: null
+    property var forecastLoader: null
     property var notificationPopoutLoader: null
     property var notificationManager: null
     property var powerPopoutLoader: null
@@ -25,7 +25,7 @@ QtObject {
     readonly property var mediaPopout: mediaPopoutLoader ? mediaPopoutLoader.item : null
     readonly property var systemPopout: systemPopoutLoader ? systemPopoutLoader.item : null
     readonly property var audioPopout: audioPopoutLoader ? audioPopoutLoader.item : null
-    readonly property var calendarPopout: calendarPopoutLoader ? calendarPopoutLoader.item : null
+    readonly property var forecast: forecastLoader ? forecastLoader.item : null
     readonly property var notificationPopout: notificationPopoutLoader ? notificationPopoutLoader.item : null
     readonly property var powerPopout: powerPopoutLoader ? powerPopoutLoader.item : null
     readonly property var systemControlPopout: systemControlPopoutLoader ? systemControlPopoutLoader.item : null
@@ -120,13 +120,13 @@ QtObject {
         _toggle(audioPopoutLoader);
     }
 
-    function toggleCalendarPopout(screenX, barLeft, barRight) {
+    function toggleForecast(screenX, barLeft, barRight) {
         if (screenX === undefined && clockItem) {
             var coords = _getCoordinatesFromItem(clockItem);
             if (coords) { screenX = coords.screenX; barLeft = coords.barLeft; barRight = coords.barRight; }
         }
-        _applyAnchors(calendarPopoutLoader, screenX, barLeft, barRight);
-        _toggle(calendarPopoutLoader);
+        _applyAnchors(forecastLoader, screenX, barLeft, barRight);
+        _toggle(forecastLoader);
     }
 
     function togglePowerPopout(screenX, barLeft, barRight) {
@@ -175,13 +175,13 @@ QtObject {
         _ensureOpen(audioPopoutLoader, sx, bl, br);
     }
 
-    function openCalendarPopout() {
+    function openForecast() {
         var sx, bl, br;
         if (clockItem) {
             var c = _getCoordinatesFromItem(clockItem);
             if (c) { sx = c.screenX; bl = c.barLeft; br = c.barRight; }
         }
-        _ensureOpen(calendarPopoutLoader, sx, bl, br);
+        _ensureOpen(forecastLoader, sx, bl, br);
     }
 
     function openPowerPopout() {

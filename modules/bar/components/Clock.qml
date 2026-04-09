@@ -19,10 +19,10 @@ BaseBlock {
     Component.onDestruction: PopoutService.clockItem = null
 
     onClicked: {
-        PopoutService.toggleCalendarPopout();
+        PopoutService.toggleForecast();
     }
     popoutOnHover: true
-    onHoverAction: PopoutService.openCalendarPopout
+    onHoverAction: PopoutService.openForecast
 
     onMiddleClicked: {
         Weather.fetchWeather();
