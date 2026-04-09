@@ -13,7 +13,9 @@ Blazingly mid desktop shell built with [Quickshell](https://quickshell.org/) for
 
 I am almost certainly forgetting one or two, or five.
 
-You can try the `install.sh` script on Arch and it's derivitives but I haven't tested it, your computer might blow up.
+> [!IMPORTANT]
+> 
+> Don't use the `install.sh` script. It's a mess and outdated.
 
 ```
 quickshell-git
