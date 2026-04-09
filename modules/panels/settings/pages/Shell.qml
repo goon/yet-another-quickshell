@@ -379,33 +379,6 @@ SettingsPage {
 
             }
 
-            BaseText {
-                text: "Notification Layout:"
-                pixelSize: Theme.typography.size.medium
-            }
-
-            BaseComboBox {
-                Layout.fillWidth: true
-                textRole: "label"
-                model: [{
-                    "label": "Compact",
-                    "value": 0
-                }, {
-                    "label": "Comfortable",
-                    "value": 1
-                }]
-                currentIndex: {
-                    for (var i = 0; i < model.length; i++) {
-                        if (model[i].value === Preferences.notificationDensity)
-                            return i;
-
-                    }
-                    return 1; // Default
-                }
-                onActivated: (index) => {
-                    Preferences.notificationDensity = model[index].value;
-                }
-            }
 
             BaseText {
                 text: "Workspace Settings"
