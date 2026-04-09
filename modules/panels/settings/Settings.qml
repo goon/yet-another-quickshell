@@ -52,10 +52,9 @@ BasePopoutWindow {
                     id: navButton
                     model: [
                         { text: "About", icon: "info", page: "About" },
-                        { text: "Appearance", icon: "palette", page: "Appearance" },
+                        { text: "Shell", icon: "dashboard", page: "Shell" },
                         { text: "Wallpaper", icon: "image", page: "Wallpaper" },
-                        { text: "System", icon: "settings", page: "System" },
-                        { text: "General", icon: "tune", page: "General" }
+                        { text: "System", icon: "settings", page: "System" }
                     ]
                     selectedIndex: 0 // Initial page: About
                     buttonCustomRadius: navBlock.blockRadius - navBlock.padding
