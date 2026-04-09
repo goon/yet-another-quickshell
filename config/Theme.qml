@@ -113,6 +113,7 @@ QtObject {
         readonly property int barMarginTop: 10
         readonly property int barMarginSide: 10
         readonly property int barPanelGap: 2
+        readonly property int notificationStackGap: 12
     }
 
     /*
