@@ -16,6 +16,7 @@ I am almost certainly forgetting one or two, or five.
 > [!IMPORTANT]
 > 
 > Don't use the `install.sh` script. It's a mess and outdated.
+> *It was intended for Arch and derivitives, but it is no longer maintained*.
 
 ```
 quickshell-git
