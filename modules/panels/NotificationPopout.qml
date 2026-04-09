@@ -183,7 +183,7 @@ BasePopoutWindow {
                                 time: groupData.notifications[0].receivedAt
                                 borderEnabled: false
                                 padding: 0
-                                showCloseButton: true
+                                showCloseButton: false
                                 progress: 0
                                 backgroundColor: Theme.alpha(Theme.colors.background, Theme.blur.surfaceOpacity)
                                 onClicked: {
@@ -192,7 +192,7 @@ BasePopoutWindow {
                                     states[groupData.appName] = !groupDelegate.expanded;
                                     root.expandedStates = Object.assign({}, states);
                                 }
-                                onCloseClicked: {
+                                onRightClicked: {
                                     const notifs = groupData.notifications;
                                     if (!expanded && isStack) {
                                         for (let i = notifs.length - 1; i >= 0; i--) {
@@ -228,9 +228,9 @@ BasePopoutWindow {
                                     time: modelData.receivedAt
                                     borderEnabled: false
                                     padding: 0
-                                    showCloseButton: true
+                                    showCloseButton: false
                                     backgroundColor: Theme.alpha(Theme.colors.base, Theme.blur.surfaceOpacity)
-                                    onCloseClicked: {
+                                    onRightClicked: {
                                         if (modelData.modelData)
                                             modelData.modelData.dismiss();
                                     }
