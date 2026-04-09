@@ -18,6 +18,7 @@ BasePopoutWindow {
 
         WeatherForecast {
             id: weather
+            Layout.fillWidth: true
         }
     }
 }

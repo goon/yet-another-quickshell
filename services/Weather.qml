@@ -10,11 +10,15 @@ QtObject {
     property string longitude: Preferences.weatherLong
     property var currentWeather: null
     property var dailyForecast: null
+    property var hourlyForecast: null
     property bool loading: false
     property string error: ""
     // derived properties for easy access
-    property string temperature: currentWeather ? Math.round(currentWeather.temperature) + "°" : "--"
-    property int weatherCode: currentWeather ? currentWeather.weathercode : -1
+    property string temperature: currentWeather ? Math.round(currentWeather.temperature_2m ?? currentWeather.temperature) + "°" : "--"
+    property string feelsLike: currentWeather ? Math.round(currentWeather.apparent_temperature) + "°" : "--"
+    property string windSpeed: currentWeather ? Math.round(currentWeather.wind_speed_10m) + (Preferences.weatherUnit === "fahrenheit" ? " mph" : " km/h") : "--"
+    property string humidity: currentWeather ? Math.round(currentWeather.relative_humidity_2m) + "%" : "--"
+    property int weatherCode: currentWeather ? (currentWeather.weather_code ?? currentWeather.weathercode) : -1
     property bool isDay: currentWeather ? currentWeather.is_day === 1 : true
     // Auto-refresh every 30 minutes
     property Timer autoRefreshTimer
@@ -58,15 +62,20 @@ QtObject {
         error = "";
         // Fetch Weather
         var xhr = new XMLHttpRequest();
-        var url = "https://api.open-meteo.com/v1/forecast?latitude=" + latitude + "&longitude=" + longitude + "&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto";
+        var url = "https://api.open-meteo.com/v1/forecast?latitude=" + latitude + "&longitude=" + longitude + 
+                 "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m" + 
+                 "&hourly=temperature_2m,weather_code" +
+                 "&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto" + 
+                 "&temperature_unit=" + Preferences.weatherUnit;
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 loading = false;
                 if (xhr.status === 200) {
                     try {
                         var json = JSON.parse(xhr.responseText);
-                        root.currentWeather = json.current_weather;
+                        root.currentWeather = json.current || json.current_weather;
                         root.dailyForecast = json.daily;
+                        root.hourlyForecast = json.hourly;
                     } catch (e) {
                         root.error = "Parse Error";
                     }
@@ -103,9 +112,13 @@ QtObject {
         geoXhr.send();
     }
 
-    // Refresh when location changes
+    // Refresh when location or units change
     onLatitudeChanged: fetchDebounce.restart()
     onLongitudeChanged: fetchDebounce.restart()
+    property Connections unitConnections: Connections {
+        target: Preferences
+        function onWeatherUnitChanged() { root.fetchWeather(); }
+    }
     Component.onCompleted: fetchWeather()
 
     autoRefreshTimer: Timer {
