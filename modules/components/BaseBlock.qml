@@ -107,7 +107,7 @@ Rectangle {
                 anchors.fill: parent
                 anchors.margins: 1.5
                 radius: parent.parent.radius - 1.5
-                color: Theme.colors.surface
+                color: root.backgroundColor
                 
                 // Add the selection tint overlay inside the cutout
                 Rectangle {
