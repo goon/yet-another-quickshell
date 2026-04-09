@@ -16,6 +16,7 @@ Item {
     property string panelState: "Closed"
     property bool interactive: panelState === "Open"
     property string panelNamespace: ""
+    property bool floating: false
     
     signal opening()
     signal opened()
@@ -73,11 +74,15 @@ Item {
         return Math.max(minX, Math.min(x, maxX));
     }
 
-    readonly property real verticalGap: Preferences.barMarginTop
+    readonly property real verticalGap: floating ? 0 : Preferences.barMarginTop
+
+    readonly property real floatingY: (popupWindow && popupWindow.screen) ? (popupWindow.screen.height - contentHeight) / 2 : 0
 
     readonly property real contentY: {
         if (manualY >= 0) return manualY;
         if (!popupWindow || !popupWindow.screen) return 0;
+
+        if (floating) return floatingY;
 
         var barSpace = Preferences.barHeight + Preferences.barMarginTop;
 
@@ -119,7 +124,19 @@ Item {
         
         // Stabilize dimensions for animation
         var h = root.contentHeight + root.verticalGap;
-        var startOffset = Preferences.barPosition === "top" ? -h : h;
+        var startOffset;
+        
+        if (root.floating) {
+            if (Preferences.barPosition === "top") {
+                // Bar at top -> Slide from bottom
+                startOffset = popupWindow.screen.height - root.floatingY;
+            } else {
+                // Bar at bottom -> Slide from top
+                startOffset = -root.floatingY - root.contentHeight;
+            }
+        } else {
+            startOffset = Preferences.barPosition === "top" ? -h : h;
+        }
         
         slideInAnimation.from = startOffset;
         slideInAnimation.to = 0;
@@ -142,7 +159,17 @@ Item {
         
         // Capture current stable height for the exit animation
         var h = root.contentHeight + root.verticalGap;
-        var endOffset = Preferences.barPosition === "top" ? -h : h;
+        var endOffset;
+        
+        if (root.floating) {
+            if (Preferences.barPosition === "top") {
+                endOffset = popupWindow.screen.height - root.floatingY;
+            } else {
+                endOffset = -root.floatingY - root.contentHeight;
+            }
+        } else {
+            endOffset = Preferences.barPosition === "top" ? -h : h;
+        }
         
         slideOutAnimation.from = root.animOffset;
         slideOutAnimation.to = endOffset;
@@ -181,6 +208,8 @@ Item {
         id: slideOutAnimation
         target: root
         property: "animOffset"
+        easing.type: Easing.OutSine
+        easing.bezierCurve: []
         onFinished: {
             panelState = "Closed";
             popupWindow.visible = false;
@@ -288,10 +317,10 @@ Item {
         Item {
             id: container
             x: root.contentX
-            y: root.contentY
+            y: root.floating ? 0 : root.contentY
             width: root.contentWidth
-            height: root.contentHeight + root.verticalGap
-            clip: true // Always clip to allow masking from behind the bar
+            height: root.floating ? (popup.screen ? popup.screen.height : 1080) : (root.contentHeight + root.verticalGap)
+            clip: !root.floating // Always clip for anchored panels, disable for floating to allow off-screen slide
 
             // Synthetic item tracing the absolute visible bounds for the Wayland Region API which ignores QML clip
             Item {
@@ -307,7 +336,7 @@ Item {
                 id: contentWrapper
                 width: parent.width
                 height: root.contentHeight
-                y: root.animOffset + root.verticalGap
+                y: (root.floating ? root.floatingY : root.verticalGap) + root.animOffset
 
                 // Background Shape
                 BaseBackground {
