@@ -8,64 +8,12 @@ SettingsPage {
     id: root
 
 
-    property string githubUrl: "https://github.com/goon/nixos"
     padding: Theme.geometry.spacing.dynamicPadding
 
     ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         spacing: Theme.geometry.spacing.large
-
-        // Project Header
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: Theme.geometry.spacing.medium
-                Layout.alignment: Qt.AlignHCenter
-
-                BaseText {
-                    text: "Yet Another Quickshell"
-                    weight: Theme.typography.weights.bold
-                    pixelSize: Theme.typography.size.display * 0.5
-                    color: Theme.colors.primary
-                    Layout.alignment: Qt.AlignHCenter
-                    horizontalAlignment: Text.AlignHCenter
-                }
-
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 20
-
-                    BaseButton {
-                        text: "GitHub"
-                        textSize: Theme.typography.size.base
-                        textColor: Theme.colors.text
-                        paddingHorizontal: 20
-                        paddingVertical: 10
-                        normalColor: Theme.colors.surface
-                        hoverGradient: true
-                        borderColor: Theme.colors.border
-                        borderWidth: 1
-                        onClicked: Qt.openUrlExternally(root.githubUrl)
-                    }
-
-                    BaseButton {
-                        text: "Restart Shell"
-                        textSize: Theme.typography.size.base
-                        textColor: Theme.colors.text
-                        paddingHorizontal: 20
-                        paddingVertical: 10
-                        normalColor: Theme.colors.surface
-                        hoverGradient: true
-                        borderColor: Theme.colors.border
-                        borderWidth: 1
-                        onClicked: ProcessService.run(["sh", "-c", "nohup { pkill -9 quickshell; sleep 0.1; quickshell; } > /dev/null 2>&1 &"])
-                    }
-                }
-            }
-
-        BaseSeparator {
-            Layout.fillWidth: true
-        }
 
         // Hardware Information
         ColumnLayout {
