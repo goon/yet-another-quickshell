@@ -12,91 +12,6 @@ SettingsPage {
         Layout.fillWidth: true
         spacing: Theme.geometry.spacing.medium
 
-        // --- Presets ---
-        GridLayout {
-            columns: 3
-            rowSpacing: Theme.geometry.spacing.dynamicPadding
-            columnSpacing: Theme.geometry.spacing.dynamicPadding
-            Layout.fillWidth: true
-
-            BaseText {
-                text: "Save, load, and manage your custom bar configurations."
-                color: Theme.colors.text
-                pixelSize: Theme.typography.size.medium
-                Layout.fillWidth: true
-                Layout.preferredWidth: 0
-                Layout.columnSpan: 3
-                Layout.bottomMargin: Theme.geometry.spacing.small
-            }
-
-            BaseInput {
-                id: presetNameInput
-                placeholderText: "Enter preset name..."
-                Layout.fillWidth: true
-                Layout.columnSpan: 2
-                implicitHeight: 42
-                font.pixelSize: Theme.typography.size.medium
-            }
-
-            BaseButton {
-                text: "Save"
-                icon: "save"
-                Layout.fillWidth: true
-                implicitHeight: 42
-                gradient: true
-                selected: containsMouse
-                weight: Theme.typography.weights.normal
-                textSize: Theme.typography.size.medium
-                iconSize: Theme.dimensions.iconMedium
-                onClicked: {
-                    if (presetNameInput.text.trim() !== "") {
-                        Preferences.savePreset(presetNameInput.text.trim());
-                        presetNameInput.text = "";
-                    }
-                }
-            }
-
-            BaseComboBox {
-                id: presetSelector
-                Layout.fillWidth: true
-                Layout.columnSpan: 1
-                implicitHeight: 42
-                font.pixelSize: Theme.typography.size.medium
-                model: Object.keys(Preferences.presets)
-            }
-
-            BaseButton {
-                text: "Load"
-                icon: "download"
-                Layout.fillWidth: true
-                implicitHeight: 42
-                gradient: true
-                selected: containsMouse
-                weight: Theme.typography.weights.normal
-                textSize: Theme.typography.size.medium
-                iconSize: Theme.dimensions.iconMedium
-                enabled: presetSelector.currentText !== ""
-                onClicked: Preferences.loadPreset(presetSelector.currentText)
-            }
-
-            BaseButton {
-                text: "Delete"
-                icon: "delete"
-                Layout.fillWidth: true
-                implicitHeight: 42
-                gradient: true
-                selected: containsMouse
-                weight: Theme.typography.weights.normal
-                textSize: Theme.typography.size.medium
-                iconSize: Theme.dimensions.iconMedium
-                enabled: presetSelector.currentText !== ""
-                onClicked: Preferences.deletePreset(presetSelector.currentText)
-            }
-        }
-
-        BaseSeparator {
-            Layout.fillWidth: true
-        }
 
         // --- Shell Configuration ---
         GridLayout {
@@ -609,7 +524,9 @@ SettingsPage {
             "notifications": { name: "Notifications", icon: "notifications" },
             "dock": { name: "Dock", icon: "vertical_split" },
             "stats": { name: "System Resources", icon: "monitoring" },
-            "systemControl": { name: "System Control", icon: "tune" }
+            "systemControl": { name: "System Control", icon: "tune" },
+            "network": { name: "Network", icon: "network_wifi" },
+            "bluetooth": { name: "Bluetooth", icon: "bluetooth" }
         })
 
         // Get all available component IDs
