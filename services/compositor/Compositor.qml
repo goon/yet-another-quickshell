@@ -105,6 +105,7 @@ QtObject {
         // Dynamic Detection
         var isHyprland = !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE");
         var isNiri = !!Quickshell.env("NIRI_SOCKET");
+        var isMango = Quickshell.env("XDG_CURRENT_DESKTOP") === "mango" || Quickshell.env("XDG_SESSION_DESKTOP") === "mango";
         
         if (isHyprland) {
             root.name = "hyprland";
@@ -112,6 +113,9 @@ QtObject {
         } else if (isNiri) {
             root.name = "niri";
             root.backend = Niri;
+        } else if (isMango) {
+            root.name = "mango";
+            root.backend = Mango;
         } else {
             console.warn("Compositor: Unknown environment. Defaulting to Niri.");
             root.name = "niri";

@@ -11,6 +11,7 @@ Singleton {
     signal workspacesUpdated(var workspaces, int activeId)
     signal windowsUpdated(var windows)
     signal focusedWindowUpdated(var window)
+    signal layoutUpdated(string layout)
 
     property var _currentWorkspaces: []
 

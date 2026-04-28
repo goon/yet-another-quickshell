@@ -33,6 +33,7 @@ Singleton {
     signal workspacesUpdated(var workspaces, int activeId)
     signal windowsUpdated(var windows)
     signal focusedWindowUpdated(var window)
+    signal layoutUpdated(string layout)
 
     // Internal caching for performance
     property var _windowsToWsCache: ({})
