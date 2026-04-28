@@ -29,12 +29,20 @@ Singleton {
         }
     }
 
-    // Secondary process to poll lswt for a full window list if available
+    // Periodic safety sync
     Timer {
         id: lswtTimer
-        interval: 2000
+        interval: 5000
         running: true
         repeat: true
+        onTriggered: queryWindows()
+    }
+
+    // Real-time focus sync triggered by mmsg events
+    Timer {
+        id: focusDebounceTimer
+        interval: 50 // Tiny delay to let Wayland protocol catch up
+        repeat: false
         onTriggered: queryWindows()
     }
 
@@ -118,24 +126,30 @@ Singleton {
         // We update the existing window list instantly so the UI responds 
         // to mmsg events without waiting for the lswt poll.
         if (root._allWindows.length > 0) {
-            var foundFocus = false;
-            var updated = root._allWindows.map(w => {
-                var isNowFocused = (w.title === win.title && w.appId === win.appId);
-                if (isNowFocused) foundFocus = true;
-                return {
-                    "id": w.id,
-                    "title": w.title,
-                    "appId": w.appId,
-                    "isFocused": isNowFocused
-                };
-            });
+            // Count how many windows match the focus info from mmsg
+            var matches = root._allWindows.filter(w => w.title === win.title && w.appId === win.appId);
             
-            root._allWindows = updated;
-            root.windowsUpdated(updated);
+            // Only perform an "optimistic" focus update if it's unambiguous.
+            // If there are multiple identical windows, we MUST wait for the lswt poll 
+            // to be 100% sure which one is focused.
+            if (matches.length === 1) {
+                var updated = root._allWindows.map(w => {
+                    var isNowFocused = (w.title === win.title && w.appId === win.appId);
+                    return {
+                        "id": w.id,
+                        "title": w.title,
+                        "appId": w.appId,
+                        "isFocused": isNowFocused
+                    };
+                });
+                
+                root._allWindows = updated;
+                root.windowsUpdated(updated);
+            }
         }
         
-        // Restart the timer to get a fresh verified list from lswt soon
-        lswtTimer.restart();
+        // Trigger an immediate verified sync from lswt
+        focusDebounceTimer.restart();
     }
 
     // --- Actions (Unified Interface) ---
@@ -144,9 +158,17 @@ Singleton {
     }
 
     function focusWindow(windowId) {
-        // Supported if windowId is numeric (lswt ID)
-        // Note: focus by ID might not be supported by MangoWM directly,
-        // but some versions might support it via internal commands.
+        if (!windowId) return;
+        
+        // windowId is "appId|title|index"
+        const parts = windowId.split("|");
+        if (parts.length < 3) return;
+        
+        const appId = parts[0];
+        const title = parts[1];
+        
+        // Use wlrctl to focus by appId and title match
+        ProcessService.runDetached(["wlrctl", "toplevel", "focus", `app_id:${appId}`, `title:${title}`]);
     }
 
     function quit() {
@@ -169,11 +191,19 @@ Singleton {
                 try {
                     var json = JSON.parse(data);
                     var tl = json.toplevels || [];
+                    var idCounts = {};
                     var windows = tl.map(w => {
+                        const appId = w["app-id"] || "";
+                        const title = w.title || "";
+                        const baseId = appId + "|" + title;
+                        
+                        idCounts[baseId] = (idCounts[baseId] || 0) + 1;
+                        const finalId = baseId + "|" + idCounts[baseId];
+
                         return {
-                            "id": w["app-id"] + ":" + w.title, // Use composite ID if identifier is missing
-                            "title": w.title || "",
-                            "appId": w["app-id"] || "",
+                            "id": finalId,
+                            "title": title,
+                            "appId": appId,
                             "isFocused": w.activated === true
                         };
                     });
