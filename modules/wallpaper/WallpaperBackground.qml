@@ -19,50 +19,50 @@ PanelWindow {
 
     // ── STATE ──────────────────────────────────────────────────────────
     property string activePath: ""
+    property string pendingPath: ""
     property bool bufferToggle: false // false: A is active, true: B is active
     property bool transitionPending: false
 
     // ── LOGIC ──────────────────────────────────────────────────────────
 
     function updateWallpaper(newPath) {
-        if (!newPath || newPath === "" || newPath === activePath) return;
-        
+        if (!newPath || newPath === "" || newPath === activePath || newPath === pendingPath) return;
 
-        
         // 1. Determine target buffer (The one NOT currently visible)
         var targetLoader = !bufferToggle ? loaderB : loaderA;
-        
-        // 2. Set source - this will trigger the image load
+
+        // 2. Set source - cancel-and-replace any in-flight load on this buffer
+        pendingPath = newPath;
         transitionPending = true;
         targetLoader.source = "file://" + newPath;
-        
+
         // Handle case where source didn't change or loaded instantly
         if (targetLoader.status === Image.Ready) {
             checkAndTransition();
         }
-        
-        // 3. Update state tracking (we commit the path now so we don't queue duplicates)
-        activePath = newPath;
     }
 
     function checkAndTransition() {
-        if (!transitionPending) return;
+        if (!transitionPending || pendingPath === "") return;
 
         var targetLoader = !bufferToggle ? loaderB : loaderA;
-        
+
         // Only start transition if the image is actually loaded and ready to render
         if (targetLoader.status === Image.Ready) {
-            
+            var newPath = pendingPath;
+
             // Set up transition
             transition.sourceOld = bufferToggle ? loaderB : loaderA;
             transition.sourceNew = targetLoader;
-            
+
             // Start Animation
-            transition.startTransition(0); // 0 = Crossfade
-            
+            transition.startTransition();
+
             // Commit Buffer Flip
             bufferToggle = !bufferToggle;
             transitionPending = false;
+            activePath = newPath;
+            pendingPath = "";
         }
     }
 
@@ -179,11 +179,17 @@ PanelWindow {
             
             property Item sourceOld
             property Item sourceNew
-            property int type: 0
             property bool running: false
             property int duration: Globals.animations.slow * 2 // Long crossfade
 
             signal finished()
+            onFinished: {
+                if (sourceOld) {
+                    sourceOld.source = "";
+                    sourceOld = null;
+                }
+                sourceNew = null;
+            }
 
             function prepare() {
                 if (sourceOld) {
@@ -194,7 +200,6 @@ PanelWindow {
                     sourceOld.scale = 1;
                     sourceOld.z = 1;
                     sourceNew.z = 2;
-                    sourceOld.z = 1;
                 }
                 if (sourceNew) {
                     sourceNew.opacity = 1;
@@ -205,19 +210,11 @@ PanelWindow {
                 }
             }
 
-            function startTransition(newType) {
-                transition.type = newType;
+            function startTransition() {
                 prepare();
-                if (type === 1) { // Zoom
-                    sourceNew.scale = 0.5;
-                    sourceNew.opacity = 0;
-                    sourceNew.visible = true;
-                    animZoom.restart();
-                } else { // Crossfade
-                    sourceNew.opacity = 0;
-                    sourceNew.visible = true;
-                    animFade.restart();
-                }
+                sourceNew.opacity = 0;
+                sourceNew.visible = true;
+                animFade.restart();
                 transition.running = true;
             }
 
@@ -230,28 +227,6 @@ PanelWindow {
                 duration: transition.duration
                 easing.type: Easing.InOutQuad
                 onFinished: transition.finished()
-            }
-
-            ParallelAnimation {
-                id: animZoom
-                onFinished: transition.finished()
-
-                BaseAnimation {
-                    target: transition.sourceNew
-                    property: "scale"
-                    from: 1.2
-                    to: 1
-                    duration: transition.duration
-                    easing.type: Easing.OutCubic
-                }
-
-                BaseAnimation {
-                    target: transition.sourceNew
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: transition.duration
-                }
             }
         }
     }

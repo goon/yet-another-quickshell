@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 import qs.services
+import "../lib/gowall.js" as GowallLib
 pragma Singleton
 
 /**
@@ -83,7 +84,7 @@ QtObject {
         
         // Write using sh
         configWriter.running = false; // Quickshell quirk: Must reset running before restarting
-        configWriter.command = ["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "--", yaml, gowallConfigFile];
+        configWriter.command = GowallLib.buildConfigWriteCommand(yaml, gowallConfigFile);
         configWriter.running = true;
     }
     
@@ -98,70 +99,42 @@ QtObject {
         var ext = currentWallpaper.split(".").pop();
         var baseName = currentWallpaper.split("/").pop().split(".").shift();
         var fileName = baseName + "_" + currentThemeId + "_" + colorHash + "." + ext;
-        
-        var targetPath = cacheDir + "/" + fileName;
-    
-        // Clean old variants (avoiding deleting the temp file!)
-        ProcessService.runDetached(["sh", "-c", "find " + cacheDir + " -type f -name '" + baseName + "_*' -not -name '" + fileName + "' -not -name '*_temp.*' -delete"]);
 
-        // Strategy: Detached Execution via sh
-        // Construct the detached command
-        // Args: input_file, theme_id, output_path
-        var cmd = "nohup sh -c 'cat \"" + currentWallpaper + "\" | gowall convert - - --theme \"" + currentThemeId + "\" > \"" + targetPath + "_temp." + ext + "\" && mv \"" + targetPath + "_temp." + ext + "\" \"" + targetPath + "\"' > /dev/null 2>&1 &";
-        
-        launcher.running = false; // Quickshell quirk: Must reset running before restarting
-        launcher.command = ["sh", "-c", cmd];
-        launcher.running = true;
-        
-        // Start Polling
-        root.pollAttempts = 0;
+        var targetPath = cacheDir + "/" + fileName;
+
+        // Clean old variants for this base name (quoted for paths containing spaces/quotes).
+        ProcessService.runDetached(GowallLib.buildCleanupCommand(cacheDir, baseName, fileName));
+
+        // Cancel any in-flight conversion before starting a new one
+        if (convertProc.running) {
+            convertProc.running = false;
+        }
+
+        // argv-only: paths flow as positional args to a single-quoted shell template,
+        // so user-controlled values can never reach a shell parser.
+        convertProc.command = GowallLib.buildConvertCommand(currentWallpaper, currentThemeId, targetPath);
+        convertProc.running = true;
+
         root.targetPollFile = targetPath;
-        pollingTimer.restart();
     }
-    
-    // Launcher Process - Pure fire and forget, no listeners
-    property Process launcher: Process {
-        id: launcher
+
+    // Convert Process - foreground, signals completion via onExited
+    property Process convertProc: Process {
+        id: convertProc
         stdout: null
         stderr: null
-        onExited: (code) => { /* Launcher finished */ }
+        onExited: (code) => {
+            root.processing = false;
+            if (code === 0) {
+                Wallpaper.processedWallpaper = root.targetPollFile;
+            } else {
+                console.warn("[Gowall] convert exited with code", code, "for", root.targetPollFile);
+                ProcessService.runDetached(["notify-send", "-a", "Gowall", "-i", "symbol:image-error", "Gowall", "Conversion failed for " + root.targetPollFile.split("/").pop()]);
+            }
+        }
     }
 
-    property int pollAttempts: 0
-    property int maxPollAttempts: 60 
     property string targetPollFile: ""
-    
-    // Polling Timer
-    property Timer pollingTimer: Timer {
-        interval: 500
-        repeat: true
-        running: false
-        onTriggered: {
-            root.pollAttempts++;
-            if (root.pollAttempts > root.maxPollAttempts) {
-                stop();
-                root.processing = false;
-                return;
-            }
-            
-            checkFileProcess.running = false; // Quickshell quirk: Must reset running before restarting
-            checkFileProcess.command = ["test", "-f", root.targetPollFile];
-            checkFileProcess.running = true;
-        }
-    }
-    
-    property Process checkFileProcess: Process {
-        id: checkFileProcess
-        command: []
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                // File detected
-                root.pollingTimer.stop();
-                root.processing = false;
-                Wallpaper.processedWallpaper = root.targetPollFile;
-            } 
-        }
-    }
 
     // ── LOGIC ─────────────────────────────────────────────────────────
 
@@ -171,6 +144,12 @@ QtObject {
     onCurrentWallpaperChanged: update()
     onCurrentColorsChanged: update()
 
+    property Timer updateDebounce: Timer {
+        interval: 150
+        repeat: false
+        onTriggered: root._doUpdate()
+    }
+
     function getExpectedFileName() {
         var ext = currentWallpaper.split(".").pop();
         var baseName = currentWallpaper.split("/").pop().split(".").shift();
@@ -178,6 +157,10 @@ QtObject {
     }
 
     function update() {
+        updateDebounce.restart();
+    }
+
+    function _doUpdate() {
         if (!enabled) {
             Wallpaper.processedWallpaper = "";
             return;
@@ -192,7 +175,7 @@ QtObject {
         if (Wallpaper.processedWallpaper === expectedPath) {
              return;
         }
-        
+
         process();
     }
 

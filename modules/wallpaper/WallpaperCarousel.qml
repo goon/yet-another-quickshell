@@ -12,7 +12,7 @@ PathView {
     readonly property real centerX: root.width / 2
     readonly property real leftX: centerX - (centerWidth / 2) - gap - (sideWidth / 2)
     readonly property real rightX: centerX + (centerWidth / 2) + gap + (sideWidth / 2)
-    
+
     // Far positions can just be off-screen
     readonly property real farLeftX: leftX - sideWidth - gap
     readonly property real farRightX: rightX + sideWidth + gap
@@ -39,45 +39,42 @@ PathView {
     }
 
     function setRandomIndex() {
-        if (model && model.length > 0) {
-            var newIndex = Math.floor(Math.random() * model.length);
-            positionViewAtIndex(newIndex, PathView.Center);
-            currentIndex = newIndex;
+        if (!model || model.length === 0) return;
+        if (model.length === 1) {
+            positionViewAtIndex(0, PathView.Center);
+            currentIndex = 0;
+            return;
         }
-    }
-
-    function positionViewAtBeginning() {
-        currentIndex = 0;
-        positionViewAtIndex(0, PathView.Center);
+        var newIndex = currentIndex;
+        for (var i = 0; i < 8; i++) {
+            var candidate = Math.floor(Math.random() * model.length);
+            if (candidate !== currentIndex) {
+                newIndex = candidate;
+                break;
+            }
+        }
+        positionViewAtIndex(newIndex, PathView.Center);
+        currentIndex = newIndex;
     }
 
     // ── CONFIGURATION ───────────────────────────────────────────────────
 
     clip: false
     model: Wallpaper.wallpapers
-    
+
     pathItemCount: Math.min(5, model.length)
 
     preferredHighlightBegin: 0.5
     preferredHighlightEnd: 0.5
     highlightRangeMode: PathView.StrictlyEnforceRange
     snapMode: PathView.SnapToItem
-    
+
     focus: true
-    
+
     // ── INPUT HANDLING ──────────────────────────────────────────────────
-    
+
     Keys.onLeftPressed: safeDecrement()
     Keys.onRightPressed: safeIncrement()
-    Keys.onPressed: function(event) {
-        if (event.key === Qt.Key_H) {
-            safeDecrement();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_L) {
-            safeIncrement();
-            event.accepted = true;
-        }
-    }
     Keys.onEscapePressed: root.closeRequested()
     Keys.onReturnPressed: {
         if (currentIndex >= 0 && model && model.length > currentIndex) {
@@ -202,9 +199,9 @@ PathView {
         // PathView injected properties
         width: (typeof PathView.itemWidth !== 'undefined') ? PathView.itemWidth : 150
         height: root.height // Full height in horizontal carousel
-        
+
         anchors.verticalCenter: parent.verticalCenter
-        
+
         z: (typeof PathView.itemZ !== 'undefined') ? PathView.itemZ : 0
         opacity: (typeof PathView.itemOpacity !== 'undefined') ? PathView.itemOpacity : 0
 
@@ -219,7 +216,7 @@ PathView {
             topRightRadius: delegateRoot.rightRadius
             bottomLeftRadius: delegateRoot.leftRadius
             bottomRightRadius: delegateRoot.rightRadius
-            
+
             // Render to texture for MultiEffect
             layer.enabled: true
             layer.smooth: true
@@ -265,7 +262,7 @@ PathView {
                 color: Globals.colors.transparent
                 border.color: Globals.colors.primary
                 border.width: PathView.isCurrentItem ? 2 : 0
-                radius: delegateRoot.leftRadius 
+                radius: delegateRoot.leftRadius
                 visible: PathView.isCurrentItem
                 opacity: PathView.isCurrentItem ? 0.3 : 0
             }

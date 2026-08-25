@@ -11,9 +11,17 @@ FocusScope {
 
     implicitWidth: 1600
     implicitHeight: 600
-    
-    // Cleaned up legacy LauncherTab properties
+
     property Item initialFocusItem: carousel
+
+    readonly property int gap: Globals.geometry.spacing.large
+    readonly property int centerWidthFloor: 320
+    readonly property int sideWidthFloor: 160
+    readonly property real availableWidth: width - (3 * gap)
+    readonly property int computedCenterWidth: Math.max(centerWidthFloor, Math.floor(availableWidth * 0.5))
+    readonly property int computedSideWidth: Math.max(sideWidthFloor, Math.floor((availableWidth - computedCenterWidth) / 2))
+
+    readonly property bool hasWallpapers: carousel.model && carousel.model.length > 0
 
     function activateCurrentItem() {
         if (carousel && carousel.model && carousel.model.length > 0 && carousel.currentIndex >= 0) {
@@ -28,17 +36,16 @@ FocusScope {
     onPanelStateChanged: {
         if (panelState === "Closed") {
             Wallpaper.ensureScanned();
-            Wallpaper.shuffleWallpapers();
-            carousel.setRandomIndex();
+            if (hasWallpapers) carousel.setRandomIndex();
         }
     }
 
     Component.onCompleted: {
         Wallpaper.ensureScanned();
         Wallpaper.shuffleWallpapers();
-        carousel.setRandomIndex();
+        if (hasWallpapers) carousel.setRandomIndex();
     }
-    
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 0
@@ -47,7 +54,7 @@ FocusScope {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            
+
             // Mask Source
             Rectangle {
                 id: mask
@@ -72,16 +79,12 @@ FocusScope {
                     anchors.fill: parent
 
                     borderRadius: Globals.geometry.radius
-                    
-                    centerWidth: parent.width * 0.5
-                    sideWidth: ((parent.width * 0.5) / 2) - gap
-                    
-                    focus: true
-                    
+
+                    gap: root.gap
+                    centerWidth: root.computedCenterWidth
+                    sideWidth: root.computedSideWidth
+
                     onCloseRequested: IslandService.closeAll()
-                    
-                    function safeIncrement() { if (incrementCurrentIndex) incrementCurrentIndex() }
-                    function safeDecrement() { if (decrementCurrentIndex) decrementCurrentIndex() }
                 }
             }
         }

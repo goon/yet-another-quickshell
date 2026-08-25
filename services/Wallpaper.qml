@@ -75,10 +75,10 @@ Item {
         if (!path || path === "" || root.currentWallpaper === path) return;
 
         root.currentWallpaper = path;
-        
+
         // 1. Persist selection immediately via Preferences service
         Preferences.currentWallpaper = path;
-        
+
         // 2. Notify system
         root.wallpaperSet(path);
         ProcessService.runDetached(["notify-send", "-a", "Wallpaper", "-i", "symbol:image", "Wallpaper", "The <b>" + path.split("/").pop() + "</b> wallpaper has been applied."]);
@@ -138,19 +138,30 @@ Item {
         // Use multiple -iname arguments for better portability and robustness
         var cmd = ["find", dir, "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", ")"];
         
-        var proc = ProcessService.run(cmd, function(output) {
+        var proc = ProcessService.run(cmd, function(output, exitCode) {
+            if (exitCode !== 0) {
+                // find exited non-zero (missing dir, permission error, etc.). Don't retry forever.
+                root.wallpapers = [];
+                root.isLoading = false;
+                root.hasScanned = true;
+                console.warn("[WallpaperService] find exited with code", exitCode, "for", dir);
+                ProcessService.runDetached(["notify-send", "-a", "Wallpaper", "-i", "symbol:image-error", "Wallpaper", "Could not scan directory: " + dir]);
+                return;
+            }
+
             var list = output.trim().split("\n").filter(l => l.length > 0);
-            
+
             root.wallpapers = list;
             root.isLoading = false;
             root.hasScanned = true;
-            
+
             // Provide variety from the start
             root.shuffleWallpapers();
-            
+
             // Sync list cache
             ProcessService.runDetached(["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "--", JSON.stringify(list), root.wallpaperListFile]);
-            
+
+            // First-run branch: only fires when nothing was previously selected.
             if (root.currentWallpaper === "" && list.length > 0) {
                 setWallpaper(list[Math.floor(Math.random() * list.length)]);
             }
