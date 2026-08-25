@@ -19,7 +19,8 @@ BaseContainer {
 
     Item {
         id: layout
-        anchors.centerIn: parent
+        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.fillWidth: false
         implicitWidth: Math.max(timeText.implicitWidth, dateText.implicitWidth - dateText.font.letterSpacing)
         implicitHeight: timeText.implicitHeight + dateText.implicitHeight - 2
 
