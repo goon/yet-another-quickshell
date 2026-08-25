@@ -19,7 +19,7 @@ BaseContainer {
     readonly property var _sections: [
         { type: "output", header: "AUDIO OUTPUT", hasDevices: true, deviceIcon: "headphones", deviceLabel: "Output Device" },
         { type: "input",  header: "MICROPHONE",   hasDevices: true, deviceIcon: "mic",          deviceLabel: "Input Device" },
-        { type: "display",header: "DISPLAY",      hasDevices: false },
+        { type: "display",header: "DISPLAY",      hasDevices: false, deviceIcon: "", deviceLabel: "" },
     ]
 
     function _setVolume(type, val) {
@@ -55,7 +55,7 @@ BaseContainer {
             // ── HEADER ──────────────────────────────────────────────────
             BaseHeader {
                 text: modelData.header
-                isActive: sectionSlider.isActive || (modelData.hasDevices && (selectorBtn.hovered || deviceListHover.hovered))
+                isActive: sectionSlider.isActive || (modelData.hasDevices && (selectorBtn.hovered || deviceListHoverHandler.hovered))
             }
 
             // ── SLIDER ──────────────────────────────────────────────────
@@ -137,7 +137,7 @@ BaseContainer {
             // ── DEVICE LIST (expanded dropdown) ─────────────────────────
             Item {
                 id: deviceListHover
-                HoverHandler { }
+                HoverHandler { id: deviceListHoverHandler }
                 Layout.fillWidth: true
                 visible: modelData.hasDevices
                 Layout.preferredHeight: root.expandedSide === modelData.type ? deviceListCol.implicitHeight : 0
