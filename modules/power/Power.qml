@@ -56,7 +56,7 @@ BaseContainer {
             property: "holdProgress"
             to: 0.0
             duration: Globals.animations.fast
-            easing.type: Easing.OutOutQuad
+            easing.type: Easing.OutQuad
         }
 
         onHoldProgressChanged: {
