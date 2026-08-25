@@ -91,7 +91,6 @@ BarClock modules/bar/BarClock.qml
 BarWorkspaces modules/bar/BarWorkspaces.qml
 BarDock modules/bar/BarDock.qml
 BarIndicators modules/bar/BarIndicators.qml
-Minimal modules/bar/Minimal.qml
 Full modules/bar/Full.qml
 
 # Dashboard

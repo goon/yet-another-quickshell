@@ -30,9 +30,6 @@ Item {
         if (isMouseOverCapsule) {
             hoverDelayTimer.stop();
             islandRoot.isHovered = true;
-            if (Preferences.bar.dynamicIsland && IslandService.activePanelName === "") {
-                IslandService.openPanel("fullbar");
-            }
         } else {
             hoverDelayTimer.start();
         }
@@ -44,9 +41,6 @@ Item {
         repeat: false
         onTriggered: {
             islandRoot.isHovered = false;
-            if (IslandService.activePanelName === "fullbar") {
-                IslandService.closeAll();
-            }
         }
     }
 
@@ -149,7 +143,7 @@ Item {
     readonly property alias maskItem: maskItem
 
     readonly property real normalSideMargin: Math.max(0, (Preferences.bar.height - (Globals.dimensions.barItemHeight)) / 2)
-    readonly property real normalCapsuleWidth: Preferences.bar.dynamicIsland ? (minimalClock.implicitWidth + normalSideMargin * 2) : (staticFull.implicitWidth + normalSideMargin * 2)
+    readonly property real normalCapsuleWidth: staticFull.implicitWidth
     readonly property real normalCapsuleHeight: Preferences.bar.height
     readonly property real normalCapsuleX: (barWindow.width - normalCapsuleWidth) / 2
     readonly property real normalCapsuleY: Preferences.bar.position === "top"
@@ -288,15 +282,8 @@ Item {
 
                 Behavior on opacity { BaseAnimation { duration: Globals.animations.fast } }
 
-                Minimal {
-                    id: minimalClock
-                    visible: Preferences.bar.dynamicIsland
-                    Layout.alignment: Qt.AlignCenter
-                }
-
                 Full {
                     id: staticFull
-                    visible: !Preferences.bar.dynamicIsland
                     barWindow: islandRoot.barWindow
                     Layout.alignment: Qt.AlignCenter
                 }
