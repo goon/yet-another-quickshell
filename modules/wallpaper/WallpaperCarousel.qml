@@ -157,7 +157,6 @@ Item {
                     sourceSize.width: 512
                     sourceSize.height: 288
                     fillMode: Image.PreserveAspectCrop
-                    smooth: true
                     cache: true
                     asynchronous: true
                 }

@@ -142,40 +142,6 @@ Item {
         root.ready = true;
     }
 
-    function loadDefaultFallback() {
-        var seed = Preferences.globals.dynamicSeedColor;
-        var bgL  = Preferences.globals.dynamicBgLightness;
-        var hsl  = Generator.hexToHsl(seed);
-        var themeData = Generator.generateTinted(seed, hsl, bgL);
-        
-        if (themeData) {
-            currentColors = themeData;
-        } else {
-            // Absolute failsafe
-            currentColors = {
-                "base00": "#1e1e2d",
-                "base01": "#181824",
-                "base02": "#29293b",
-                "base03": "#3d3d51",
-                "base04": "#4f4f65",
-                "base05": "#CDD6F4",
-                "base06": "#F5E0DC",
-                "base07": "#B4BEFE",
-                "base08": "#F38BA8",
-                "base09": "#FAB387",
-                "base0A": "#F9E2AF",
-                "base0B": "#A6E3A1",
-                "base0C": "#94E2D5",
-                "base0D": "#9d99e5",
-                "base0E": "#c199e5",
-                "base0F": "#F2CDCD",
-                "primaryIdx": "base0D",
-                "secondaryIdx": "base0E"
-            };
-        }
-        ready = true;
-    }
-
     // ── STARTUP ───────────────────────────────────────────────────────
 
     property bool _startupHooksRun: false
@@ -263,10 +229,6 @@ Item {
     function updateFontFamilies() {
         const blacklist = /(mtx|math|private|opensymbol|stix|tex|pfont|noto sans .* [0-9])/i;
         root.allFontFamilies = Qt.fontFamilies().filter(font => !blacklist.test(font));
-    }
-    function getCleanFontFamilies() {
-        if (allFontFamilies.length === 0) updateFontFamilies();
-        return allFontFamilies;
     }
 
     // ── HOOK SERVICE ──────────────────────────────────────────────────

@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Shapes
 import Quickshell
 import qs
 
@@ -16,4 +15,6 @@ Rectangle {
 
     color: Globals.alpha(Globals.colors.background, Globals.opacity.background)
     radius: Globals.geometry.radius
+    border.color: borderColor
+    border.width: borderWidth
 }

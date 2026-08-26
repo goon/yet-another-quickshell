@@ -23,36 +23,6 @@ QtObject {
     // Auto-refresh every 30 minutes
     property Timer autoRefreshTimer
     property Timer fetchDebounce
-    property var searchResults: []
-    property bool searchLoading: false
-
-    function searchLocation(query) {
-        if (!query || query.length < 2) {
-            searchResults = [];
-            return ;
-        }
-        searchLoading = true;
-        var xhr = new XMLHttpRequest();
-        var url = "https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(query) + "&count=5&language=en&format=json";
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                searchLoading = false;
-                if (xhr.status === 200) {
-                    try {
-                        var json = JSON.parse(xhr.responseText);
-                        var results = json.results || [];
-                        root.searchResults = results.map(function(item) {
-                            item.full_name = item.name + (item.admin1 ? (", " + item.admin1) : "") + (item.country ? (", " + item.country) : "");
-                            return item;
-                        });
-                    } catch (e) {
-                    }
-                }
-            }
-        };
-        xhr.open("GET", url);
-        xhr.send();
-    }
 
     function setClosestLocation(query) {
         if (!query) return;

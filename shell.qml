@@ -1,8 +1,6 @@
 import QtQuick
 //@ pragma UseQApplication
 import Quickshell
-import Quickshell.Io
-import Quickshell.Services.Notifications
 import qs
 import qs.services
 

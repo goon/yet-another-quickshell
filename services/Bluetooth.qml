@@ -27,12 +27,6 @@ Singleton {
 
     }
 
-    function toggleScan() {
-        if (adapter)
-            adapter.discovering = !adapter.discovering;
-
-    }
-
     // Force a fresh scan by stopping then starting after a short delay.
     // BlueZ rejects `discovering = true` while already discovering with
     // "Operation already in progress", so we need the stop to settle first.
@@ -60,10 +54,4 @@ Singleton {
     function removeDevice(address) {
         ProcessService.runDetached(["bluetoothctl", "remove", address]);
     }
-
-
-
-    function refresh() {
-    }
-
 }

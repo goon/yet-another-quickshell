@@ -8,7 +8,6 @@ BaseContainer {
     property alias text: input.text
     property alias inputItem: input
     property alias placeholderText: input.placeholderText
-    property var tabModel: []
     property int currentIndex: 0
     property list<Item> activePageHints: []
 

@@ -132,7 +132,6 @@ FocusScope {
         // ── HEADER ──────────────────────────────────────────────────
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 0
 
             RowLayout {
                 Layout.fillWidth: true
@@ -215,7 +214,6 @@ FocusScope {
                         anchors.fill: parent
                         model: filteredModel
                         clip: true
-                        spacing: 0
                         interactive: true
                         focus: true
                         activeFocusOnTab: true

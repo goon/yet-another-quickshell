@@ -10,7 +10,6 @@ QtObject {
     property string activePanelName: ""
     property var activeScreen: null
     property Item activePanelItem: null
-    property bool indicatorsHovered: false
     property bool isIslandHovered: false
 
     property real anchorX: -1
@@ -217,22 +216,6 @@ QtObject {
                 openPanel("volumetoast");
                 _volumeToastTimer.restart();
             }
-        }
-    }
-
-    // ── WORKSPACE SWITCH (FULLBAR) ────────────────────────────────────
-    property Timer _workspaceFullBarTimer: Timer {
-        interval: 2000
-        onTriggered: {
-            if (activePanelName === "fullbar" && !isIslandHovered) {
-                closeAll();
-            }
-        }
-    }
-
-    property Connections _workspaceConnections: Connections {
-        target: Compositor
-        function onActiveWorkspaceIdChanged() {
         }
     }
 }

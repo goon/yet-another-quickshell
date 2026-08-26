@@ -12,8 +12,6 @@ Item {
     property var barWindow: null
     property string hoveredKey: ""
 
-    onHoveredKeyChanged: IslandService.indicatorsHovered = (hoveredKey !== "")
-
     Layout.alignment: Qt.AlignVCenter
     Layout.fillWidth: false
     implicitWidth: background.implicitWidth

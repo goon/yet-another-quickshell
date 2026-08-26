@@ -231,11 +231,6 @@ Singleton {
 
     // ── PUBLIC UTILITIES ──────────────────────────────────────────────
 
-    function normalizeAddress(raw) {
-        if (!raw) return "";
-        return raw.startsWith("0x") ? raw : ("0x" + raw);
-    }
-
     property bool usingLua: true
 
     // ── PUBLIC ACTIONS ────────────────────────────────────────────────

@@ -110,7 +110,6 @@ BaseContainer {
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
                         BaseText {
                             text: modelData.type === "output"
                                 ? Volume.getNodeName(Volume.audioSink)

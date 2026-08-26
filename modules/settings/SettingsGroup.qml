@@ -12,7 +12,6 @@ Item {
     ColumnLayout {
         id: col
         anchors.fill: parent
-        spacing: 0
     }
 
     HoverHandler {

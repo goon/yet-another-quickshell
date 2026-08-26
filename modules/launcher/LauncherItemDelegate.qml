@@ -109,7 +109,6 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                spacing: 0
 
                 BaseText {
                     Layout.fillWidth: true

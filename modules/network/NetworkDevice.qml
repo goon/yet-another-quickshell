@@ -37,7 +37,6 @@ Item {
         id: mainLayout
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: 0
 
         // Main Row Container
         Item {

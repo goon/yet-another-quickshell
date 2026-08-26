@@ -38,22 +38,10 @@ QtObject {
         ProcessService.runDetached(["systemctl", "suspend"]);
     }
 
-    // Hibernate the system
-    function hibernate() {
-        powerOperationStarted("hibernate");
-        ProcessService.runDetached(["systemctl", "hibernate"]);
-    }
-
     // Logout the current user
     function logout() {
         powerOperationStarted("logout");
         Compositor.quit();
-    }
-
-    // Reboot to BIOS/Firmware
-    function rebootToBios() {
-        powerOperationStarted("rebootToBios");
-        ProcessService.runDetached(["systemctl", "reboot", "--firmware-setup"]);
     }
 
 }

@@ -178,7 +178,6 @@ ComboBox {
 
         contentItem: ColumnLayout {
             id: contentLayout
-            spacing: 0
 
             BaseInput {
                 id: searchInput

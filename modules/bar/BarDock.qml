@@ -20,7 +20,6 @@ BaseContainer {
 
         Layout.alignment: Qt.AlignCenter
         orientation: ListView.Horizontal
-        spacing: 0
         interactive: false
         model: Hyprland.toplevels
         implicitWidth: contentWidth
@@ -59,7 +58,6 @@ BaseContainer {
                 width: Globals.dimensions.iconBase
                 height: Globals.dimensions.iconBase
                 fillMode: Image.PreserveAspectFit
-                smooth: true
                 mipmap: true
                 scale: (isFocused || isHovered) ? 1.2 : 1
                 opacity: (isFocused || isHovered) ? 1 : 0.6

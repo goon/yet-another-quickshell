@@ -67,7 +67,6 @@ Item {
             fillMode: Image.PreserveAspectFit
             asynchronous: true
             cache: true
-            smooth: true
 
             onStatusChanged: {
                 if (status === Image.Ready) {

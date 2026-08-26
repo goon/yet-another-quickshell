@@ -473,8 +473,7 @@ BaseBento {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
-                    spacing: 0
-                    
+
                     Repeater {
                         id: forecastRepeater
                         model: Weather.dailyForecast ? Math.min(5, Weather.dailyForecast.time.length - 2) : 0

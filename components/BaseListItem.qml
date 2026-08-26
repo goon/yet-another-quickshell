@@ -59,7 +59,6 @@ Item {
         // Active / Hover Notch
         Rectangle {
             visible: root.showInternalIndicator && root.selected
-            opacity: 1.0
             Layout.preferredWidth: 3
             Layout.preferredHeight: 20
             Layout.alignment: Qt.AlignVCenter
@@ -113,7 +112,6 @@ Item {
         ColumnLayout {
             Layout.fillWidth: true
             Layout.leftMargin: root.showVerticalSeparator ? 8 : 0
-            spacing: 0
 
             BaseText {
                 visible: root.title !== ""

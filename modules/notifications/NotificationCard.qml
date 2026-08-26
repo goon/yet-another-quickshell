@@ -95,7 +95,6 @@ BaseContainer {
                         source: parent.resolveSource(root.notification ? root.notification.image : "")
                         sourceSize.width: width
                         sourceSize.height: height
-                        smooth: true
                         visible: !root.isScreenshot && !root.isRecording && status === Image.Ready && source.toString() !== ""
                     }
 
@@ -111,7 +110,6 @@ BaseContainer {
                         source: parent.resolveSource(root.notification ? root.notification.appIcon : "")
                         sourceSize.width: width
                         sourceSize.height: height
-                        smooth: true
                         visible: !root.isScreenshot && !root.isRecording && !specificImage.visible && status === Image.Ready && source.toString() !== ""
                     }
 

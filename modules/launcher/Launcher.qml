@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
 import qs
 
 FocusScope {
@@ -40,10 +39,6 @@ FocusScope {
     }
 
     property Item initialFocusItem: searchBar
-
-    function switchToTab(index) {
-        root.switchTab(index);
-    }
     
     property int currentTabIndex: 0
     property int activeListCount: root.activeTabObject ? root.activeTabObject.listCount : 0
@@ -277,7 +272,6 @@ FocusScope {
                 }
                 clickable: true
                 Layout.fillWidth: true
-                tabModel: root.tabModel
                 currentIndex: root.currentTabIndex
                 onTabClicked: (index) => {
                     return root.switchTab(index);

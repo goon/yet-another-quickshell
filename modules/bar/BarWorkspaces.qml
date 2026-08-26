@@ -79,7 +79,6 @@ Item {
                 Component.onCompleted: if (isActive) root.activeItem = indicator
                 onIsActiveChanged: if (isActive) root.activeItem = indicator
 
-                visible: true
                 opacity: isActive ? 1.0 : (mouseArea.containsMouse ? 1.0 : (hasWindows ? 0.6 : 0.2))
 
                 Behavior on width {

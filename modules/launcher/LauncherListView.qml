@@ -6,7 +6,6 @@ ListView {
     id: root
 
     // Common Configuration
-    clip: false
     spacing: Globals.geometry.spacing.large
     activeFocusOnTab: false
     

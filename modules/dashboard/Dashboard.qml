@@ -1,9 +1,7 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
 import qs.services
 import qs
 
@@ -38,7 +36,6 @@ FocusScope {
                 ColumnLayout {
                     id: centeredContainer
                     width: parent.width
-                    spacing: 0
 
                     ColumnLayout {
                         id: mainRow

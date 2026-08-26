@@ -104,14 +104,7 @@ QtObject {
 
 
 
-    function copyToClipboard(text) {
-        if (!text)
-            return;
-        // Text copied normally via UI (if needed anywhere, though the UI mostly pastes)
-        ProcessService.runDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "--", text]);
-    }
-
-    // copyToClipboard but natively via cliphist (fixes image pasting)
+    // paste via cliphist (fixes image pasting)
     function pasteCliphistItem(rawLine) {
         if (!rawLine || !root.cliphistAvailable) return;
         ProcessService.runDetached(["sh", "-c", "printf '%s\n' \"$1\" | cliphist decode | wl-copy", "--", rawLine]);
@@ -270,19 +263,6 @@ QtObject {
 
         var markerRe = /(\bfunction\b|\bdef\b|\bvar\b|\blet\b|\bconst\b|\bimport\b|\breturn\b|=>|<\/\w+>|<\w+[ >]|\{\s*$|^\s*\}|\$\(|::|^#!\/|\bconsole\.\w|\bprint\s*\(|;\s*$)/m;
         return markerRe.test(text);
-    }
-
-    function getCodeLanguage(text) {
-        if (!text) return "text";
-        if (/^\s*</m.test(text) && /<\/\w+>/m.test(text)) return "html";
-        if (/^\s*</m.test(text) && /<\?xml/i.test(text)) return "xml";
-        if (/^\s*[\{\[]/m.test(text) && /"\s*:\s*/m.test(text)) return "json";
-        if (/^\s*(def |class |import |from |print\()/m.test(text)) return "python";
-        if (/^\s*(function |const |let |var |import |export |=>)/m.test(text)) return "javascript";
-        if (/^\s*(#include|int main|void |printf|std::)/m.test(text)) return "cpp";
-        if (/^\s*#\!/m.test(text)) return "shell";
-        if (/^\s*([\w-]+:\s*$|[\w-]+:\s+.+)/m.test(text) && /^\s+/m.test(text)) return "yaml";
-        return "text";
     }
 
     function formatTimeAgo(date) {

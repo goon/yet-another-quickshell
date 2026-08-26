@@ -22,7 +22,6 @@ BaseContainer {
 
         property string actionIcon: ""
         property string actionLabel: ""
-        property color actionColor: Globals.colors.primary
         
         property real holdProgress: 0.0
         signal actionTriggered()
@@ -90,7 +89,6 @@ BaseContainer {
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 0
                     Layout.alignment: Qt.AlignVCenter
 
                     Item {
@@ -205,7 +203,6 @@ BaseContainer {
         ColumnLayout {
             id: layout
             anchors.fill: parent
-            spacing: 0
 
         BaseHeader {
             text: "POWER"

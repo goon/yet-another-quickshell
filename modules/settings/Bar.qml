@@ -113,7 +113,6 @@ SettingsPage {
             }
         }
 
-        property color primaryColor: Globals.colors.primary
         Layout.fillWidth: true
 
         ColumnLayout {

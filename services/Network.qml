@@ -136,10 +136,6 @@ QtObject {
     property string pendingForgetSsid: ""
 
     // ── PUBLIC API ────────────────────────────────────────────────────
-    function refresh() {
-        _buildNetworksList();
-    }
-
     function scan() {
         if (!wifiDevice) return;
         // Toggle scanner to trigger a fresh scan
@@ -206,15 +202,6 @@ QtObject {
 
     function toggleWifi() {
         Networking.wifiEnabled = !Networking.wifiEnabled;
-    }
-
-    function toggleEthernet() {
-        if (!wiredDevice) return;
-        if (wiredDevice.connected) {
-            wiredDevice.disconnect();
-        } else if (wiredDevice.network) {
-            wiredDevice.network.connect();
-        }
     }
 
     // ── REACTIVE UPDATES ──────────────────────────────────────────────

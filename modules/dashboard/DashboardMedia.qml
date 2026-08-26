@@ -14,15 +14,6 @@ BaseBento {
 
 
 
-    function formatTime(seconds) {
-        if (isNaN(seconds) || seconds < 0 || !isFinite(seconds)) return "00:00";
-        var m = Math.floor(seconds / 60);
-        var s = Math.floor(seconds % 60);
-        return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
-    }
-
-
-
     ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true

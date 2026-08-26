@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
-import QtQuick.Effects
 import qs
 
 BaseContainer {
@@ -20,7 +19,6 @@ BaseContainer {
     ColumnLayout {
         Layout.fillWidth: true
         visible: root.notifCount > 0
-        spacing: 0
 
         RowLayout {
             Layout.fillWidth: true
