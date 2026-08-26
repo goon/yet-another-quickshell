@@ -15,8 +15,6 @@ BaseContainer {
     Layout.fillWidth: false
     paddingHorizontal: 0
     implicitHeight: _itemSize
-    onImplicitWidthChanged: console.log("[BarDock] implicitWidth changed to", implicitWidth)
-
     ListView {
         id: listView
 
@@ -27,7 +25,6 @@ BaseContainer {
         model: Hyprland.toplevels
         implicitWidth: contentWidth
         implicitHeight: _itemSize
-    onImplicitWidthChanged: console.log("[BarDock] implicitWidth changed to", implicitWidth)
 
         delegate: Item {
             id: windowItem
@@ -46,7 +43,6 @@ BaseContainer {
             readonly property bool isFocused: modelData ? modelData.activated : false
 
             implicitHeight: _itemSize
-    onImplicitWidthChanged: console.log("[BarDock] implicitWidth changed to", implicitWidth)
             implicitWidth: isValid ? _itemSize : 0
 
             Behavior on implicitWidth {

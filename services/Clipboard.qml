@@ -8,7 +8,7 @@ QtObject {
     id: root
 
     property ListModel history
-    readonly property string cliphistDb: "/home/michael/.cache/cliphist/db"
+    readonly property string cliphistDb: Globals.cacheDir + "/cliphist/db"
     property bool cliphistAvailable: false
     property var firstSeenTimes: ({})
     property bool firstSeenLoaded: false

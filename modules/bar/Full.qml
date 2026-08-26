@@ -12,7 +12,6 @@ Item {
     // Explicitly define height matching the pill clock capsule height
     implicitHeight: Preferences.bar.height
     implicitWidth: (contentLayout.implicitWidth || 0) + (dynamicEndMargin * 2)
-    onImplicitWidthChanged: console.log("[Full] implicitWidth changed to", implicitWidth)
     
     readonly property real normalSideMargin: 0
     readonly property real dynamicEndMargin: Globals.geometry.padding.island

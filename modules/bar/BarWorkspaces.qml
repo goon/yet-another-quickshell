@@ -42,7 +42,6 @@ Item {
         return (count - 1) * 16 + 28;
     }
     implicitWidth: _staticWidth
-    onImplicitWidthChanged: console.log("[BarWorkspaces] implicitWidth changed to", implicitWidth)
 
     Item {
         id: layout
