@@ -1,276 +1,198 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell.Widgets
 import qs
 
-PathView {
+/**
+ * Horizontal wallpaper carousel driven by a single real-valued `pos` that
+ * chases `focusIndex` per frame. Every tile derives width, height, x, dim,
+ * saturation, shadow and edge fade from `ao = |index - pos|` via five-stop
+ * slot tables. The chase uses a frame-rate-independent exponential settle
+ * (`1 - exp(-frameTime / τ)`), so wheel bursts and 40Hz key autorepeat stay
+ * coherent: lag is bounded by the time constant, not piled up across
+ * per-tile retargeting animations. Tiles fade out at the strip edges so
+ * the carousel ends soften instead of being hard-cut by the parent mask.
+ */
+Item {
     id: root
 
-    property int borderRadius: Globals.geometry.radius
-    property int centerWidth: 500
-    property int sideWidth: 250
-    property int gap: Globals.geometry.spacing.large
-    readonly property real centerX: root.width / 2
-    readonly property real leftX: centerX - (centerWidth / 2) - gap - (sideWidth / 2)
-    readonly property real rightX: centerX + (centerWidth / 2) + gap + (sideWidth / 2)
-
-    // Far positions can just be off-screen
-    readonly property real farLeftX: leftX - sideWidth - gap
-    readonly property real farRightX: rightX + sideWidth + gap
-
-    property bool canNavigate: true
+    property var model: Wallpaper.wallpapers
+    readonly property int currentIndex: focusIndex
+    property real s: 1.3
     signal closeRequested()
 
-    // ── LOGIC ───────────────────────────────────────────────────────────
+    property int focusIndex: 0
+    property real pos: 0
 
-    function safeDecrement() {
-        if (canNavigate) {
-            decrementCurrentIndex();
-            canNavigate = false;
-            navTimer.start();
-        }
+    /**
+     * Pixel-valued slot tables (Ukishima-faithful). The wrapper sizes the
+     * panel to fit the natural tile dimensions; `s` scales all geometry.
+     */
+    readonly property var slotW:      [196, 126, 104, 88, 74]
+    readonly property var slotH:      [110, 71, 59, 50, 42]
+    readonly property var slotCX:     [0, 143, 244, 326, 393]
+    readonly property var slotBright: [1.00, 0.56, 0.42, 0.30, 0.22]
+    readonly property var slotSat:    [1.00, 0.65, 0.55, 0.45, 0.40]
+
+    function slotLerp(arr, ao) {
+        if (ao >= arr.length - 1)
+            return arr[arr.length - 1];
+        var i = Math.floor(ao);
+        var f = ao - i;
+        return arr[i] + (arr[i + 1] - arr[i]) * f;
     }
 
-    function safeIncrement() {
-        if (canNavigate) {
-            incrementCurrentIndex();
-            canNavigate = false;
-            navTimer.start();
-        }
+    function offsetX(off) {
+        var ao = Math.abs(off);
+        var last = slotCX.length - 1;
+        var cx = ao <= last
+            ? slotLerp(slotCX, ao)
+            : slotCX[last] + (ao - last) * 60;
+        return (off < 0 ? -cx : cx) * s;
     }
 
-    function setRandomIndex() {
-        if (!model || model.length === 0) return;
-        if (model.length === 1) {
-            positionViewAtIndex(0, PathView.Center);
-            currentIndex = 0;
+    function move(delta) {
+        if (model.length === 0)
             return;
-        }
-        var newIndex = currentIndex;
-        for (var i = 0; i < 8; i++) {
-            var candidate = Math.floor(Math.random() * model.length);
-            if (candidate !== currentIndex) {
-                newIndex = candidate;
-                break;
-            }
-        }
-        positionViewAtIndex(newIndex, PathView.Center);
-        currentIndex = newIndex;
+        focusIndex = Math.max(0, Math.min(model.length - 1, focusIndex + delta));
     }
 
-    // ── CONFIGURATION ───────────────────────────────────────────────────
+    /**
+     * Snap focus to the first wallpaper. Called by the wrapper when the
+     * panel opens; skips the chase so the strip always opens on index 0
+     * rather than animating to it.
+     */
+    function focusFirst() {
+        if (!model || model.length === 0)
+            return;
+        focusIndex = 0;
+        pos = 0;
+    }
 
-    clip: false
-    model: Wallpaper.wallpapers
-
-    pathItemCount: Math.min(5, model.length)
-
-    preferredHighlightBegin: 0.5
-    preferredHighlightEnd: 0.5
-    highlightRangeMode: PathView.StrictlyEnforceRange
-    snapMode: PathView.SnapToItem
+    onModelChanged: focusFirst()
 
     focus: true
+    clip: true
 
-    // ── INPUT HANDLING ──────────────────────────────────────────────────
+    FrameAnimation {
+        running: root.pos !== root.focusIndex
+        onTriggered: {
+            var k = 1 - Math.exp(-frameTime / 0.07);
+            var next = root.pos + (root.focusIndex - root.pos) * k;
+            root.pos = Math.abs(next - root.focusIndex) < 0.001 ? root.focusIndex : next;
+        }
+    }
 
-    Keys.onLeftPressed: safeDecrement()
-    Keys.onRightPressed: safeIncrement()
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.NoButton
+        z: -1
+        property real acc: 0
+        onWheel: (event) => {
+            acc += event.angleDelta.y / 120;
+            const notches = Math.trunc(acc);
+            if (notches !== 0) {
+                root.move(-notches);
+                acc -= notches;
+            }
+            event.accepted = true;
+        }
+    }
+
+    Repeater {
+        model: root.model
+
+        delegate: Item {
+            id: tile
+            required property int index
+            required property var modelData
+
+            readonly property real off: index - root.pos
+            readonly property real ao: Math.abs(off)
+            readonly property bool focused: index === root.focusIndex
+            readonly property real bright: root.slotLerp(root.slotBright, ao)
+            readonly property real sat:    root.slotLerp(root.slotSat, ao)
+            readonly property real corner:  (8 + 2 * Math.max(0, 1 - ao)) * root.s
+            readonly property real edgeFade: {
+                var soft = 50;
+                var gap = Math.min(x, root.width - (x + width));
+                return Math.max(0, Math.min(1, gap / soft));
+            }
+
+            /**
+             * `?v=<mtime>` is a cache-buster for QPixmapCache. Image caches by
+             * URL, so a regenerated thumb with the same path keeps showing the
+             * stale frame unless the URL changes. Bumping on mtime (which
+             * changes only when the source file is replaced) means thumbs are
+             * re-fetched exactly when the underlying wallpaper changes.
+             */
+            readonly property string thumbSource: "file://" + modelData.thumb + "?v=" + Math.round(modelData.mtime)
+
+            width:  root.slotLerp(root.slotW, ao) * root.s
+            height: root.slotLerp(root.slotH, ao) * root.s
+            x: root.width / 2 + root.offsetX(off) - width / 2
+            y: (root.height - height) / 2
+            z: 10 - ao
+            visible: ao <= 2
+            opacity: edgeFade * (ao <= 2 ? 1 : Math.max(0, 3 - ao))
+
+            ClippingRectangle {
+                id: card
+                anchors.fill: parent
+                radius: tile.corner
+                color: Globals.colors.base
+
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    saturation: tile.sat - 1
+                    shadowEnabled: tile.focused
+                    shadowColor: Qt.rgba(0, 0, 0, 0.45)
+                    shadowBlur: 0.7
+                    shadowVerticalOffset: 4 * root.s
+                }
+
+                Image {
+                    anchors.fill: parent
+                    source: tile.ao <= 4 ? tile.thumbSource : ""
+                    sourceSize.width: 512
+                    sourceSize.height: 288
+                    fillMode: Image.PreserveAspectCrop
+                    smooth: true
+                    cache: true
+                    asynchronous: true
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: "black"
+                    opacity: 1 - tile.bright
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    if (tile.focused) {
+                        if (root.model && root.currentIndex >= 0 && root.currentIndex < root.model.length) {
+                            Wallpaper.setWallpaper(root.model[root.currentIndex].path);
+                            root.closeRequested();
+                        }
+                    } else {
+                        root.focusIndex = tile.index;
+                    }
+                }
+            }
+        }
+    }
+
+    Keys.onLeftPressed:  root.move(-1)
+    Keys.onRightPressed: root.move(1)
     Keys.onEscapePressed: root.closeRequested()
     Keys.onReturnPressed: {
-        if (currentIndex >= 0 && model && model.length > currentIndex) {
-            Wallpaper.setWallpaper(model[currentIndex]);
+        if (root.model && root.currentIndex >= 0 && root.currentIndex < root.model.length) {
+            Wallpaper.setWallpaper(root.model[root.currentIndex].path);
             root.closeRequested();
-        }
-    }
-
-    Timer {
-        id: navTimer
-        interval: 150
-        repeat: false
-        onTriggered: root.canNavigate = true
-    }
-
-    // ── PATHS ─────────────────────────────────────────────────────────
-
-    path: standardPath
-
-    Path {
-        id: standardPath
-        startX: -500
-        startY: root.height / 2
-
-        // Start Attributes
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 0 }
-        PathAttribute { name: "itemOpacity"; value: 0 }
-        PathAttribute { name: "dimOpacity"; value: 0.5 }
-        PathAttribute { name: "leftRadius"; value: root.borderRadius }
-        PathAttribute { name: "rightRadius"; value: 0 }
-
-        // 1. Far Left (Preload)
-        PathLine { x: root.farLeftX; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 0 }
-        PathAttribute { name: "itemOpacity"; value: 0 }
-        PathAttribute { name: "dimOpacity"; value: 0.5 }
-        PathAttribute { name: "leftRadius"; value: root.borderRadius }
-        PathAttribute { name: "rightRadius"; value: 0 }
-        PathPercent { value: 0.1 }
-
-        // 2. Left Side (Visible)
-        PathLine { x: root.leftX; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 1 }
-        PathAttribute { name: "itemOpacity"; value: 1 }
-        PathAttribute { name: "dimOpacity"; value: 0.4 }
-        PathAttribute { name: "leftRadius"; value: root.borderRadius }
-        PathAttribute { name: "rightRadius"; value: 0 }
-        PathPercent { value: 0.3 }
-
-        // 2b. Pre-Center (Hold Radius)
-        PathLine { x: root.leftX + (root.centerX - root.leftX) * 0.9; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth + (root.centerWidth - root.sideWidth) * 0.9 }
-        PathAttribute { name: "itemZ"; value: 99 }
-        PathAttribute { name: "itemOpacity"; value: 1 }
-        PathAttribute { name: "dimOpacity"; value: 0.1 }
-        PathAttribute { name: "leftRadius"; value: root.borderRadius } // Hold radius
-        PathAttribute { name: "rightRadius"; value: 0 }
-        PathPercent { value: 0.49 }
-
-        // 3. Center (Hero)
-        PathLine { x: root.centerX; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.centerWidth }
-        PathAttribute { name: "itemZ"; value: 100 }
-        PathAttribute { name: "itemOpacity"; value: 1 }
-        PathAttribute { name: "dimOpacity"; value: 0 }
-        PathAttribute { name: "leftRadius"; value: 0 }
-        PathAttribute { name: "rightRadius" ; value: 0 }
-        PathPercent { value: 0.5 }
-
-        // 3b. Post-Center (Restore Radius)
-        PathLine { x: root.centerX + (root.rightX - root.centerX) * 0.1; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.centerWidth - (root.centerWidth - root.sideWidth) * 0.1 }
-        PathAttribute { name: "itemZ"; value: 99 }
-        PathAttribute { name: "itemOpacity"; value: 1 }
-        PathAttribute { name: "dimOpacity"; value: 0.1 }
-        PathAttribute { name: "leftRadius"; value: 0 }
-        PathAttribute { name: "rightRadius"; value: root.borderRadius } // Restore radius
-        PathPercent { value: 0.51 }
-
-        // 4. Right Side (Visible)
-        PathLine { x: root.rightX; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 1 }
-        PathAttribute { name: "itemOpacity"; value: 1 }
-        PathAttribute { name: "dimOpacity"; value: 0.4 }
-        PathAttribute { name: "leftRadius"; value: 0 }
-        PathAttribute { name: "rightRadius"; value: root.borderRadius }
-        PathPercent { value: 0.7 }
-
-        // 5. Far Right (Preload)
-        PathLine { x: root.farRightX; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 0 }
-        PathAttribute { name: "itemOpacity"; value: 0 }
-        PathAttribute { name: "dimOpacity"; value: 0.5 }
-        PathAttribute { name: "leftRadius"; value: 0 }
-        PathAttribute { name: "rightRadius"; value: root.borderRadius }
-        PathPercent { value: 0.9 }
-
-        // End Point
-        PathLine { x: root.width + 500; y: root.height / 2 }
-        PathAttribute { name: "itemWidth"; value: root.sideWidth }
-        PathAttribute { name: "itemZ"; value: 0 }
-        PathAttribute { name: "itemOpacity"; value: 0 }
-        PathAttribute { name: "dimOpacity"; value: 0.5 }
-        PathAttribute { name: "leftRadius"; value: 0 }
-        PathAttribute { name: "rightRadius"; value: Globals.geometry.radius * 1.5 }
-    }
-
-    delegate: Item {
-        id: delegateRoot
-
-        property real dimLevel: (typeof PathView.dimOpacity !== 'undefined') ? PathView.dimOpacity : 0
-        property real leftRadius: (typeof PathView.leftRadius !== 'undefined') ? PathView.leftRadius : Globals.geometry.radius
-        property real rightRadius: (typeof PathView.rightRadius !== 'undefined') ? PathView.rightRadius : Globals.geometry.radius
-        // Model data (file path)
-        property string imageSource: modelData || ""
-
-        // PathView injected properties
-        width: (typeof PathView.itemWidth !== 'undefined') ? PathView.itemWidth : 150
-        height: root.height // Full height in horizontal carousel
-
-        anchors.verticalCenter: parent.verticalCenter
-
-        z: (typeof PathView.itemZ !== 'undefined') ? PathView.itemZ : 0
-        opacity: (typeof PathView.itemOpacity !== 'undefined') ? PathView.itemOpacity : 0
-
-        // 1. THE STENCIL: Mask Rectangle (Layered)
-        Rectangle {
-            id: maskRect
-
-            anchors.fill: effectContainer
-            visible: false // Hidden, used as texture source
-            color: Globals.colors.text // Mask source
-            topLeftRadius: delegateRoot.leftRadius
-            topRightRadius: delegateRoot.rightRadius
-            bottomLeftRadius: delegateRoot.leftRadius
-            bottomRightRadius: delegateRoot.rightRadius
-
-            // Render to texture for MultiEffect
-            layer.enabled: true
-            layer.smooth: true
-            layer.samples: 8
-        }
-
-        // 2. THE CANVAS: Layered Item
-        Item {
-            id: effectContainer
-
-            anchors.fill: parent
-            layer.enabled: true
-
-            // Placeholder / Loading State
-            Rectangle {
-                anchors.fill: parent
-                color: Globals.colors.background
-                opacity: 0.1
-                visible: imgSource.status !== Image.Ready
-            }
-
-            Image {
-                id: imgSource
-
-                anchors.fill: parent
-                source: "file://" + delegateRoot.imageSource
-                fillMode: Image.PreserveAspectCrop
-                smooth: true
-                cache: true
-                asynchronous: true // Prevent blocking
-            }
-
-            // Dimming overlay
-            Rectangle {
-                anchors.fill: parent
-                color: Globals.colors.base
-                opacity: delegateRoot.dimLevel
-            }
-
-            // Highlight border for current item
-            Rectangle {
-                anchors.fill: parent
-                color: Globals.colors.transparent
-                border.color: Globals.colors.primary
-                border.width: PathView.isCurrentItem ? 2 : 0
-                radius: delegateRoot.leftRadius
-                visible: PathView.isCurrentItem
-                opacity: PathView.isCurrentItem ? 0.3 : 0
-            }
-
-            layer.effect: MultiEffect {
-                maskEnabled: true
-                maskSource: maskRect
-            }
         }
     }
 }

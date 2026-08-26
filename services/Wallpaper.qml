@@ -6,27 +6,31 @@ pragma Singleton
 
 /**
  * Wallpaper Service
- * 
- * Handles wallpaper selection and persistence.
+ *
+ * Maintains a scanned list of wallpapers (`wallpapers`) with pre-generated
+ * 512px thumbnails. Each entry: { path, name, mtime, thumb }. The shell start
+ * triggers scanWallpapers(), which runs `lib/thumbnailer.sh` synchronously to
+ * regenerate any missing or stale thumbs into `~/.cache/yaks/thumbnails/`,
+ * then reads the directory listing newest-first and emits the entries.
+ * Thumbs persist across reloads; only files whose source mtime is newer than
+ * the thumb get regenerated. The carousel reads `tile.modelData.thumb` with a
+ * `?v=<mtime>` cache-buster so a replaced wallpaper file forces a reload.
  */
 Item {
     id: root
 
-    // ── STATE PROPERTIES ────────────────────────────────────────────
     property var wallpapers: []
     property string currentWallpaper: ""
-    
-    // UI State
+
     property bool isLoading: false
     property bool hasScanned: false
-    
-    // ── COMPUTED SOURCE ─────────────────────────────────────────────
-    // This is the SINGLE source of truth for the UI.
-    property string processedWallpaper: ""
-    property string displayWallpaper: (Preferences.wallpaper.gowallEnabled && processedWallpaper !== "") ? processedWallpaper : currentWallpaper
 
-    // ── CHILD COMPONENTS ────────────────────────────────────────────
+    property string processedWallpaper: ""
+    readonly property string displayWallpaper: (Preferences.wallpaper.gowallEnabled && processedWallpaper !== "") ? processedWallpaper : currentWallpaper
+
     readonly property string wallpaperListFile: Globals.cacheDir + "/wallpaper.json"
+    readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/yaks/thumbnails"
+    readonly property string thumbScript: Globals.rootDir + "/lib/thumbnailer.sh"
 
     FileView {
         id: listCacheView
@@ -49,7 +53,7 @@ Item {
                     root.currentWallpaper = Preferences.currentWallpaper;
                 }
                 if (!root.hasScanned) {
-                    root.scanWallpapers();
+                    scanWallpapers();
                 }
             }
         }
@@ -59,63 +63,35 @@ Item {
         target: Preferences.wallpaper
         function onDirectoryChanged() {
             if (Preferences.loaded) {
-                root.refreshWallpapers();
+                refreshWallpapers();
             }
         }
     }
 
     signal wallpaperSet(string path)
 
-    // ── PUBLIC API ──────────────────────────────────────────────────
-
-    /**
-     * Updates the current wallpaper. 
-     */
     function setWallpaper(path) {
         if (!path || path === "" || root.currentWallpaper === path) return;
 
         root.currentWallpaper = path;
 
-        // 1. Persist selection immediately via Preferences service
         Preferences.currentWallpaper = path;
 
-        // 2. Notify system
         root.wallpaperSet(path);
         ProcessService.runDetached(["notify-send", "-a", "Wallpaper", "-i", "symbol:image", "Wallpaper", "The <b>" + path.split("/").pop() + "</b> wallpaper has been applied."]);
     }
 
-    function ensureScanned() { 
+    function ensureScanned() {
         if (!hasScanned) {
             if (Preferences.loaded) {
-                scanWallpapers(); 
+                scanWallpapers();
             } else {
                 console.log("[WallpaperService] ensureScanned called before Preferences loaded, skipping until load");
             }
         }
     }
     function refreshWallpapers() { hasScanned = false; scanWallpapers(); }
-    
 
-    function shuffleWallpapers() {
-        if (!wallpapers || wallpapers.length <= 1) return;
-        
-        var shuffled = [...wallpapers];
-        for (var i = shuffled.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        wallpapers = shuffled;
-    }
-
-    // ── INTERNAL LOGIC ──────────────────────────────────────────────
-
-    property Timer scanRetryTimer: Timer {
-        interval: 1000
-        repeat: false
-        onTriggered: root.scanWallpapers()
-    }
-
-    // Expand $HOME and ~ in a path string to the actual home directory
     function expandPath(path) {
         var home = Globals.homeDir;
         if (path.indexOf("$HOME") === 0) return home + path.substring(5);
@@ -123,10 +99,15 @@ Item {
         return path;
     }
 
+    /**
+     * One shell pipeline: ensure cache dir exists, run thumbnailer to fill
+     * missing/stale thumbs, list files newest-first with thumb paths appended.
+     * The thumbnailer is sync within the pipeline so the list step is guaranteed
+     * to see up-to-date thumb files for every source it returns.
+     */
     function scanWallpapers() {
-        if (isLoading) return; 
-        
-        // Expand $HOME and ~ in the directory path
+        if (isLoading) return;
+
         var dir = expandPath(Preferences.wallpaper.directory);
         if (!dir || dir === "") {
             console.warn("[WallpaperService] No valid directory to scan");
@@ -134,49 +115,73 @@ Item {
             root.hasScanned = true;
             return;
         }
-        
-        // Use multiple -iname arguments for better portability and robustness
-        var cmd = ["find", dir, "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", ")"];
-        
+
+        var wpdirJson = JSON.stringify(dir);
+        var thumbdirJson = JSON.stringify(root.thumbDir);
+        var scriptJson = JSON.stringify(root.thumbScript);
+
+        var cmd = ["sh", "-c",
+            "export PATH=\"/run/current-system/sw/bin:/etc/profiles/per-user/$USER/bin:/nix/var/nix/profiles/default/bin:$HOME/.local/bin:$PATH\"; " +
+            "thumbdir=" + thumbdirJson + "; " +
+            "mkdir -p \"$thumbdir\"; " +
+            "sh " + scriptJson + " " + wpdirJson + " \"$thumbdir\"; " +
+            "find " + wpdirJson + " -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) -printf '%T@\\t%p\\n' | sort -rn | " +
+            "while IFS=$'\\t' read -r mtime path; do " +
+            "  printf '%s\\t%s\\t%s\\n' \"$mtime\" \"$path\" \"$thumbdir/$(basename \"$path\").png\"; " +
+            "done"];
+
+        isLoading = true;
         var proc = ProcessService.run(cmd, function(output, exitCode) {
+            isLoading = false;
+            hasScanned = true;
+
             if (exitCode !== 0) {
-                // find exited non-zero (missing dir, permission error, etc.). Don't retry forever.
                 root.wallpapers = [];
-                root.isLoading = false;
-                root.hasScanned = true;
-                console.warn("[WallpaperService] find exited with code", exitCode, "for", dir);
+                console.warn("[WallpaperService] scan failed for", dir, "exit code", exitCode);
                 ProcessService.runDetached(["notify-send", "-a", "Wallpaper", "-i", "symbol:image-error", "Wallpaper", "Could not scan directory: " + dir]);
                 return;
             }
 
-            var list = output.trim().split("\n").filter(l => l.length > 0);
+            var lines = output.trim().split("\n").filter(l => l.length > 0);
+            var entries = [];
+            for (var i = 0; i < lines.length; i++) {
+                var t1 = lines[i].indexOf("\t");
+                if (t1 < 1) continue;
+                var t2 = lines[i].indexOf("\t", t1 + 1);
+                if (t2 < 0) continue;
+                var path = lines[i].substring(t1 + 1, t2);
+                entries.push({
+                    path: path,
+                    name: path.substring(path.lastIndexOf("/") + 1),
+                    mtime: parseFloat(lines[i].substring(0, t1)),
+                    thumb: lines[i].substring(t2 + 1)
+                });
+            }
+            root.wallpapers = entries;
 
-            root.wallpapers = list;
-            root.isLoading = false;
-            root.hasScanned = true;
+            ProcessService.runDetached(["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "--", JSON.stringify(entries), root.wallpaperListFile]);
 
-            // Provide variety from the start
-            root.shuffleWallpapers();
-
-            // Sync list cache
-            ProcessService.runDetached(["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "--", JSON.stringify(list), root.wallpaperListFile]);
-
-            // First-run branch: only fires when nothing was previously selected.
-            if (root.currentWallpaper === "" && list.length > 0) {
-                setWallpaper(list[Math.floor(Math.random() * list.length)]);
+            if (root.currentWallpaper === "" && entries.length > 0) {
+                setWallpaper(entries[0].path);
             }
         });
 
-        if (proc) {
-            isLoading = true;
-        } else {
+        if (!proc) {
+            isLoading = false;
+            hasScanned = true;
             scanRetryTimer.start();
         }
+    }
+
+    property Timer scanRetryTimer: Timer {
+        interval: 1000
+        repeat: false
+        onTriggered: root.scanWallpapers()
     }
 
     Component.onCompleted: {
         if (Preferences.loaded) {
             scanWallpapers();
-        } 
+        }
     }
 }
