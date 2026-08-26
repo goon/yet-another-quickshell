@@ -13,7 +13,7 @@ import qs
  * per-tile retargeting animations. Tiles fade out at the strip edges so
  * the carousel ends soften instead of being hard-cut by the parent mask.
  */
-Item {
+FocusScope {
     id: root
 
     property var model: Wallpaper.wallpapers
@@ -87,16 +87,6 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
         z: -1
-        property real acc: 0
-        onWheel: (event) => {
-            acc += event.angleDelta.y / 120;
-            const notches = Math.trunc(acc);
-            if (notches !== 0) {
-                root.move(-notches);
-                acc -= notches;
-            }
-            event.accepted = true;
-        }
     }
 
     Repeater {
@@ -185,13 +175,9 @@ Item {
         }
     }
 
-    Keys.onLeftPressed:  root.move(-1)
-    Keys.onRightPressed: root.move(1)
-    Keys.onEscapePressed: root.closeRequested()
-    Keys.onReturnPressed: {
-        if (root.model && root.currentIndex >= 0 && root.currentIndex < root.model.length) {
-            Wallpaper.setWallpaper(root.model[root.currentIndex].path);
-            root.closeRequested();
-        }
+    WheelHandler {
+        onWheel: (event) => Binds.handleWheel(event)
     }
+
+    Keys.onPressed: (event) => Binds.handleKey(event)
 }

@@ -13,6 +13,8 @@ FocusScope {
 
     property Item initialFocusItem: carousel
 
+    readonly property var carouselItem: carousel
+
     readonly property bool hasWallpapers: carousel.model && carousel.model.length > 0
 
     onPanelStateChanged: {

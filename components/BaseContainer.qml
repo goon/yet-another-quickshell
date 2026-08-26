@@ -3,8 +3,11 @@ import QtQuick.Layouts
 import Quickshell
 import qs
 
-Item {
+FocusScope {
     id: root
+
+    // Panel state
+    property string panelState: "Closed"
 
     // Layout
     property real padding: 0
@@ -16,6 +19,8 @@ Item {
     property bool clickable: false
     property bool hoverEnabled: true
     property bool autoFillWidth: true
+
+    Keys.onPressed: (event) => Binds.handleKey(event)
     
     HoverHandler {
         id: hoverHandler

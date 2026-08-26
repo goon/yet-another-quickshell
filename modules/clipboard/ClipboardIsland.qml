@@ -42,41 +42,7 @@ FocusScope {
         root.searchText = "";
     }
 
-    Keys.onPressed: (event) => root.handleKey(event)
-
-    function handleKey(event) {
-        if (event.key === Qt.Key_Down) {
-            if (listView.count > 0) {
-                if (listView.currentIndex < 0) listView.currentIndex = 0;
-                else if (listView.currentIndex < listView.count - 1) listView.currentIndex++;
-                event.accepted = true;
-            }
-        } else if (event.key === Qt.Key_Up) {
-            if (listView.count > 0) {
-                if (listView.currentIndex > 0) listView.currentIndex--;
-                event.accepted = true;
-            }
-        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            if (root.currentItem) {
-                Clipboard.pasteCliphistItem(root.currentItem.rawLine);
-                if (Preferences.clipboard.autoClose) {
-                    IslandService.closeAll();
-                }
-                event.accepted = true;
-            }
-        } else if (event.key === Qt.Key_Delete) {
-            if (root.currentItem) {
-                Clipboard.deleteCliphistItem(root.currentItem.rawLine);
-                if (listView.currentIndex >= listView.count - 1) {
-                    listView.currentIndex = Math.max(0, listView.count - 2);
-                }
-            }
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Escape) {
-            IslandService.closeAll();
-            event.accepted = true;
-        }
-    }
+    Keys.onPressed: (event) => Binds.handleKey(event)
 
     ListModel {
         id: filteredModel
@@ -200,7 +166,7 @@ FocusScope {
                             onTextChanged: root.searchText = text
                             leftPadding: 8
                             rightPadding: 8
-                            Keys.onPressed: (event) => root.handleKey(event)
+                            Keys.onPressed: (event) => Binds.handleKey(event)
                         }
                     }
                 }

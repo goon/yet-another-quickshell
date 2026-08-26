@@ -218,37 +218,7 @@ FocusScope {
                 listView.currentIndex = index;
         }
 
-        // Centralized Keyboard Handling
-        Keys.onPressed: (event) => {
-            var listView = getCurrentListView();
-            if (event.key === Qt.Key_Down) {
-                navigateDown();
-                event.accepted = true;
-            } else if (event.key === Qt.Key_Up) {
-                navigateUp();
-                event.accepted = true;
-            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                activateCurrentItem();
-                event.accepted = true;
-            } else if (event.key === Qt.Key_Escape) {
-                IslandService.closeAll();
-                event.accepted = true;
-            } else if (listView && listView.activeFocus) {
-                if (event.key === Qt.Key_Delete) {
-                    event.accepted = false; 
-                    return;
-                }
-                
-                var isSpecial = (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab || event.key === Qt.Key_Left || event.key === Qt.Key_Right);
-                if (!isSpecial && event.text.length > 0) {
-                    backToSearch(event.text);
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_Backspace) {
-                    backToSearch("\b");
-                    event.accepted = true;
-                }
-            }
-        }
+        Keys.onPressed: (event) => Binds.handleKey(event)
 
         anchors.fill: parent
         focus: true
@@ -279,24 +249,6 @@ FocusScope {
                 
                 visible: !root.isWallpaperActive
                 Layout.preferredHeight: visible ? Globals.dimensions.launcherSearchHeight : 0
-
-                
-                inputItem.Keys.onLeftPressed: (event) => {
-                    if (root.isWallpaperActive) {
-                        root.navigateHorizontal(-1);
-                        event.accepted = true;
-                    } else {
-                        event.accepted = false;
-                    }
-                }
-                inputItem.Keys.onRightPressed: (event) => {
-                     if (root.isWallpaperActive) {
-                        root.navigateHorizontal(1);
-                        event.accepted = true;
-                    } else {
-                        event.accepted = false;
-                    }
-                }
 
                 onDownPressed: root.navigateDown()
                 onPressedSignal: {

@@ -62,21 +62,6 @@ BaseContainer {
                 verticalAlignment: Text.AlignVCenter
                 focus: true
                 activeFocusOnTab: false
-
-                Keys.onPressed: (event) => {
-                    if (event.key === Qt.Key_Down) {
-                        root.downPressed();
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Backspace && input.text.length === 0) {
-                        if (LauncherService.activeUtilityMode !== "") {
-                            LauncherService.activeUtilityMode = "";
-                            event.accepted = true;
-                        } else if (root.currentIndex !== 0) {
-                            root.tabClicked(0);
-                            event.accepted = true;
-                        }
-                    }
-                }
             }
         }
 
