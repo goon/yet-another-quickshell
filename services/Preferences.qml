@@ -221,7 +221,7 @@ QtObject {
 
     // ── PERSISTENCE ──────────────────────────────────────────────────────
 
-    readonly property string prefsFile: Globals.cacheDir + "/preferences.json"
+    readonly property string prefsFile: Globals.dataDir + "/preferences.json"
 
     function save() {
         if (!loaded) return;
